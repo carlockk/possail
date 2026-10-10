@@ -26,10 +26,22 @@ const API = axios.create({
 
 let lastLocalRequiredNoticeAt = 0;
 
-const buildFallbackDataByUrl = (url = '') => {
-  const lower = String(url).toLowerCase();
+const notifyLocalRequired = () => {
+  if (typeof window === 'undefined') return;
+  const now = Date.now();
+  if (now - lastLocalRequiredNoticeAt <= 2500) return;
+  lastLocalRequiredNoticeAt = now;
+  window.dispatchEvent(
+    new CustomEvent(LOCAL_REQUIRED_EVENT, {
+      detail: { message: 'Debes seleccionar un local para continuar.' },
+    })
+  );
+};
 
-  if (lower.includes('/ventas/resumen-rango')) {
+const buildFallbackDataByUrl = (url = '') => {
+  const path = String(url).split('?')[0].toLowerCase();
+
+  if (path === '/ventas/resumen-rango') {
     return {
       total: 0,
       cantidad: 0,
@@ -47,12 +59,13 @@ const buildFallbackDataByUrl = (url = '') => {
     };
   }
 
-  if (
-    lower.includes('/caja/historial') ||
-    lower.includes('/categorias') ||
-    lower.includes('/productos') ||
-    lower.includes('/agregados')
-  ) {
+  if (path === '/ventas') return { items: [], siguiente: null };
+
+  if ([
+    '/caja/historial', '/categorias', '/productos', '/productos/base',
+    '/insumos', '/insumo-categorias', '/insumos/movimientos',
+    '/agregados', '/agregados/grupos', '/tickets', '/descuentos',
+  ].includes(path)) {
     return [];
   }
 
@@ -93,6 +106,22 @@ API.interceptors.request.use((config) => {
     config.headers['x-local-id'] = localId;
   }
 
+  // Sin local, estas lecturas no tienen datos y el servidor responderia 400.
+  // Responder localmente evita que el navegador registre peticiones fallidas.
+  if (token && !localId && !hasLocalHeader && String(config.method || 'get').toLowerCase() === 'get') {
+    const fallbackData = buildFallbackDataByUrl(config.url);
+    if (fallbackData !== null) {
+      notifyLocalRequired();
+      config.adapter = async () => ({
+        data: fallbackData,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      });
+    }
+  }
+
   return config;
 });
 
@@ -113,17 +142,7 @@ API.interceptors.response.use(
       );
     }
 
-    if (isLocalRequired && typeof window !== 'undefined') {
-      const now = Date.now();
-      if (now - lastLocalRequiredNoticeAt > 2500) {
-        lastLocalRequiredNoticeAt = now;
-        window.dispatchEvent(
-          new CustomEvent(LOCAL_REQUIRED_EVENT, {
-            detail: { message: 'Debes seleccionar un local para continuar.' },
-          })
-        );
-      }
-    }
+    if (isLocalRequired) notifyLocalRequired();
 
     if (isLocalRequired && method === 'get') {
       const fallbackData = buildFallbackDataByUrl(url);
