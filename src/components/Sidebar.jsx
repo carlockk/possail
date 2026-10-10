@@ -57,6 +57,8 @@ import { useThemeMode } from '../context/ThemeContext';
 import logo from '../possail.png';
 
 const expandedDrawerWidth = 280;
+const sidebarBackground = '#212121';
+const sidebarBorder = '#525252';
 
 export default function Sidebar({
   mobileOpen,
@@ -131,7 +133,7 @@ export default function Sidebar({
       try {
         const res = await obtenerLocales();
         setLocales(res.data || []);
-      } catch (err) {
+      } catch {
         setLocales([]);
       } finally {
         setLocalesLoading(false);
@@ -153,7 +155,7 @@ export default function Sidebar({
       const current = String(res?.data?.logo_url || '').trim();
       setLogoWebActual(current);
       setLogoWebUrl(current);
-    } catch (_err) {
+    } catch {
       setLogoWebActual('');
       setLogoWebUrl('');
     }
@@ -194,9 +196,9 @@ export default function Sidebar({
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        backgroundColor: '#111827',
+        backgroundColor: sidebarBackground,
         color: '#fff',
-        borderRight: '1px solid #1f2937',
+        borderRight: `1px solid ${sidebarBorder}`,
         overflowX: 'hidden',
         transition: theme.transitions.create(['width', 'min-width'], {
           duration: theme.transitions.duration.shortest
@@ -242,7 +244,7 @@ export default function Sidebar({
         <IconButton
           size="small"
           onClick={onToggleCollapsed}
-          sx={{ color: '#93c5fd', border: '1px solid #374151' }}
+          sx={{ color: '#d4d4d4', border: `1px solid ${sidebarBorder}` }}
         >
           {collapsed ? <ChevronRightIcon fontSize="small" /> : <MenuOpenIcon fontSize="small" />}
         </IconButton>
@@ -265,7 +267,7 @@ export default function Sidebar({
         <IconButton
           size="small"
           onClick={abrirDialogLogoWeb}
-          sx={{ color: '#93c5fd', border: '1px solid #374151' }}
+          sx={{ color: '#d4d4d4', border: `1px solid ${sidebarBorder}` }}
         >
           <EditOutlinedIcon fontSize="small" />
         </IconButton>
@@ -322,15 +324,15 @@ export default function Sidebar({
           disabled={localesLoading || locales.length === 0}
           sx={{
             color: '#fff',
-            '.MuiOutlinedInput-notchedOutline': { borderColor: '#374151' },
-            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#4b5563' },
-            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#93c5fd' },
+            '.MuiOutlinedInput-notchedOutline': { borderColor: sidebarBorder },
+            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#8a8a8a' },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#e5e5e5' },
             '.MuiSvgIcon-root': { color: '#e5e7eb' },
           }}
           MenuProps={{
             PaperProps: {
               sx: {
-                bgcolor: '#111827',
+                bgcolor: sidebarBackground,
                 color: '#fff',
               },
             },
@@ -350,7 +352,7 @@ export default function Sidebar({
   )}
 </Box>
 
-      <Divider sx={{ borderColor: '#374151' }} />
+      <Divider sx={{ borderColor: sidebarBorder }} />
 
       <List
         sx={{
@@ -362,14 +364,14 @@ export default function Sidebar({
             width: '8px'
           },
           '&::-webkit-scrollbar-track': {
-            backgroundColor: '#0f172a'
+            backgroundColor: '#171717'
           },
           '&::-webkit-scrollbar-thumb': {
-            backgroundColor: '#334155',
+            backgroundColor: sidebarBorder,
             borderRadius: '8px'
           },
           '&::-webkit-scrollbar-thumb:hover': {
-            backgroundColor: '#475569'
+            backgroundColor: '#737373'
           }
         }}
       >
@@ -655,7 +657,7 @@ export default function Sidebar({
         '& .MuiDrawer-paper': {
           width: drawerWidth,
           boxSizing: 'border-box',
-          backgroundColor: '#111827',
+          backgroundColor: sidebarBackground,
           overflowX: 'hidden',
           ...(isMobile
             ? {

@@ -163,14 +163,14 @@ export default function PlatformConsole() {
   };
 
   const sidebar = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#111827', color: '#f8fafc' }}>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#212121', color: '#f8fafc' }}>
       <Box sx={{ p: 3, pb: 2 }}>
         <Box component="img" src={logo} alt="Possail" sx={{ width: 112, height: 50, objectFit: 'contain' }} />
         <Typography variant="caption" sx={{ display: 'block', color: '#93c5fd', letterSpacing: 1.4, fontWeight: 700, mt: 1 }}>
           ADMINISTRACIÓN GLOBAL
         </Typography>
       </Box>
-      <Divider sx={{ borderColor: '#334155' }} />
+      <Divider sx={{ borderColor: '#525252' }} />
       <List sx={{ px: 1.5, py: 2, flex: 1 }}>
         {menu.map((item) => (
           <ListItemButton
@@ -181,7 +181,7 @@ export default function PlatformConsole() {
               '& .MuiListItemIcon-root': { color: 'inherit' },
               '&.Mui-selected': { bgcolor: '#1d4ed8', color: '#fff' },
               '&.Mui-selected:hover': { bgcolor: '#2563eb' },
-              '&:hover': { bgcolor: '#1e293b' },
+              '&:hover': { bgcolor: '#303030' },
             }}
           >
             <ListItemIcon>{item.icon}</ListItemIcon>
@@ -189,7 +189,7 @@ export default function PlatformConsole() {
           </ListItemButton>
         ))}
       </List>
-      <Divider sx={{ borderColor: '#334155' }} />
+      <Divider sx={{ borderColor: '#525252' }} />
       <Box sx={{ p: 2 }}>
         <Typography variant="caption" sx={{ color: '#94a3b8' }}>Administrador de plataforma</Typography>
         <Typography variant="body2" noWrap sx={{ mb: 1.5 }}>{usuario?.email}</Typography>
@@ -255,7 +255,7 @@ export default function PlatformConsole() {
       <Drawer
         variant={isMobile ? 'temporary' : 'permanent'} open={isMobile ? drawerOpen : true}
         onClose={() => setDrawerOpen(false)} ModalProps={{ keepMounted: true }}
-        sx={{ width: isMobile ? 0 : drawerWidth, flexShrink: 0, '& .MuiDrawer-paper': { width: drawerWidth, border: 0 } }}
+        sx={{ width: isMobile ? 0 : drawerWidth, flexShrink: 0, '& .MuiDrawer-paper': { width: drawerWidth, borderRight: '1px solid #525252' } }}
       >{sidebar}</Drawer>
       <Box component="main" sx={{ flex: 1, minWidth: 0 }}>
         <Paper square elevation={0} sx={{ px: { xs: 2, md: 4 }, py: 2, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 2 }}>
