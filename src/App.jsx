@@ -30,7 +30,7 @@ const ListaUsuarios = lazy(() => import('./pages/ListaUsuarios'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
-const PlatformDashboard = lazy(() => import('./pages/PlatformDashboard'));
+const PlatformDashboard = lazy(() => import('./pages/PlatformConsole'));
 const TicketsAbiertos = lazy(() => import('./pages/TicketsAbiertos'));
 const Locales = lazy(() => import('./pages/Locales'));
 const Insumos = lazy(() => import('./pages/Insumos'));
@@ -178,6 +178,9 @@ export default function App() {
             <Route path="/registro" element={!usuario ? <Register /> : <Navigate to={rutaInicio} />} />
             <Route path="/plataforma/login" element={!usuario ? <Login platform /> : <Navigate to={rutaInicio} />} />
             <Route path="/plataforma" element={isPlatformAdmin ? <PlatformDashboard /> : <Navigate to={usuario ? rutaInicio : '/login'} />} />
+            <Route path="/plataforma/negocios" element={isPlatformAdmin ? <PlatformDashboard /> : <Navigate to={usuario ? rutaInicio : '/login'} />} />
+            <Route path="/plataforma/usuarios" element={isPlatformAdmin ? <PlatformDashboard /> : <Navigate to={usuario ? rutaInicio : '/login'} />} />
+            <Route path="/plataforma/planes" element={isPlatformAdmin ? <PlatformDashboard /> : <Navigate to={usuario ? rutaInicio : '/login'} />} />
             <Route path="/checkout/result" element={<CheckoutResult />} />
             <Route path="/" element={!usuario ? <Navigate to="/login" /> : isPlatformAdmin ? <Navigate to="/plataforma" /> : esMesero ? <Navigate to="/restaurante" /> : <Productos />} />
             <Route

@@ -224,6 +224,7 @@ export const obtenerResumenPorRango = (inicio, fin) =>
 export const loginUsuario = (data) => API.post('/auth/login', data);
 export const registrarNegocio = (data) => API.post('/auth/register', data);
 export const obtenerResumenPlataforma = () => API.get('/plataforma/resumen');
+export const obtenerUsuariosPlataforma = (pagina = 1) => API.get('/plataforma/usuarios', { params: { pagina } });
 export const obtenerNegocioPlataforma = (id) => API.get(`/plataforma/negocios/${id}`);
 export const cambiarEstadoNegocio = (id, estado) => API.patch(`/plataforma/negocios/${id}/estado`, { estado });
 
