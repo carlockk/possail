@@ -96,7 +96,7 @@ export default function Login({ platform = false }) {
         minHeight: '100vh',
         display: 'flex',
         alignItems: 'stretch',
-        backgroundColor: '#020617',
+        backgroundColor: '#171717',
         overflow: 'hidden'
       }}
     >
@@ -146,11 +146,10 @@ export default function Login({ platform = false }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background:
-            'linear-gradient(135deg, rgba(15,23,42,0.92), rgba(2,6,23,0.9))',
+          backgroundColor: '#212121',
           backdropFilter: 'blur(12px)',
           boxShadow: '-5px 0 30px rgba(0,0,0,0.5)',
-          borderLeft: '1px solid rgba(59,130,246,0.25)',
+          borderLeft: '1px solid #525252',
           p: { xs: 3, sm: 4 },
         }}
       >
@@ -175,7 +174,7 @@ export default function Login({ platform = false }) {
                 height: 52,
                 objectFit: 'contain',
                 mb: 1,
-                filter: 'drop-shadow(0 10px 20px rgba(59,130,246,0.5))',
+                filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.35))',
               }}
             />
 
@@ -208,7 +207,7 @@ export default function Login({ platform = false }) {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <EmailIcon sx={{ color: '#60a5fa' }} />
+                      <EmailIcon sx={{ color: '#b4b4b4' }} />
                     </InputAdornment>
                   ),
                   sx: {
@@ -218,17 +217,17 @@ export default function Login({ platform = false }) {
                     '& fieldset': { border: 'none' }, // ❌ sin borde blanco
                     '&:hover fieldset': { border: 'none' },
                     '&.Mui-focused fieldset': { border: 'none' },
-                    borderBottom: '1px solid rgba(148,163,184,0.3)', // 🔹 línea inferior tenue
+                    borderBottom: '1px solid rgba(220,220,220,0.5)',
                     '&:focus-within': {
-                      borderBottom: '1px solid #3b82f6', // 🔹 azul al focus
+                      borderBottom: '1px solid #e5e5e5',
                     },
                     transition: 'border-color 0.25s ease',
                   },
                 }}
                 InputLabelProps={{
                   sx: {
-                    color: '#94a3b8',
-                    '&.Mui-focused': { color: '#60a5fa' },
+                    color: '#b4b4b4',
+                    '&.Mui-focused': { color: '#e5e5e5' },
                   },
                 }}
                 required
@@ -243,7 +242,7 @@ export default function Login({ platform = false }) {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <LockIcon sx={{ color: '#60a5fa' }} />
+                      <LockIcon sx={{ color: '#b4b4b4' }} />
                     </InputAdornment>
                   ),
                   sx: {
@@ -253,17 +252,17 @@ export default function Login({ platform = false }) {
                     '& fieldset': { border: 'none' },
                     '&:hover fieldset': { border: 'none' },
                     '&.Mui-focused fieldset': { border: 'none' },
-                    borderBottom: '1px solid rgba(148,163,184,0.3)',
+                    borderBottom: '1px solid rgba(220,220,220,0.5)',
                     '&:focus-within': {
-                      borderBottom: '1px solid #3b82f6',
+                      borderBottom: '1px solid #e5e5e5',
                     },
                     transition: 'border-color 0.25s ease',
                   },
                 }}
                 InputLabelProps={{
                   sx: {
-                    color: '#94a3b8',
-                    '&.Mui-focused': { color: '#60a5fa' },
+                    color: '#b4b4b4',
+                    '&.Mui-focused': { color: '#e5e5e5' },
                   },
                 }}
                 required
