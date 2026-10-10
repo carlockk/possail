@@ -57,6 +57,8 @@ export default function PlatformConsole() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [query, setQuery] = useState('');
+  const [businessDialogOpen, setBusinessDialogOpen] = useState(false);
+  const [businessPage, setBusinessPage] = useState(1);
   const [detail, setDetail] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -119,6 +121,18 @@ export default function PlatformConsole() {
     const search = query.trim().toLowerCase();
     return !search || `${item.nombre} ${item.ownerEmail}`.toLowerCase().includes(search);
   }), [data, query]);
+  const businessPages = Math.max(1, Math.ceil(negocios.length / 10));
+  const currentBusinessPage = Math.min(businessPage, businessPages);
+  const paginatedBusinesses = negocios.slice((currentBusinessPage - 1) * 10, currentBusinessPage * 10);
+  const updateBusinessQuery = (value) => {
+    setQuery(value);
+    setBusinessPage(1);
+  };
+  const openBusinessDialog = () => {
+    setQuery('');
+    setBusinessPage(1);
+    setBusinessDialogOpen(true);
+  };
 
   const openDetail = async (id) => {
     setDetailLoading(true);
@@ -221,6 +235,14 @@ export default function PlatformConsole() {
     </TableContainer>
   );
 
+  const businessPagination = (
+    <Stack direction="row" justifyContent="flex-end" alignItems="center" spacing={2} sx={{ mt: 2 }}>
+      <Button disabled={currentBusinessPage <= 1} onClick={() => setBusinessPage(currentBusinessPage - 1)}>Anterior</Button>
+      <Typography variant="body2">Página {currentBusinessPage} de {businessPages}</Typography>
+      <Button disabled={currentBusinessPage >= businessPages} onClick={() => setBusinessPage(currentBusinessPage + 1)}>Siguiente</Button>
+    </Stack>
+  );
+
   const stats = [
     ['Negocios registrados', data?.totalNegocios || 0, <StorefrontOutlinedIcon key="business" color="primary" />],
     ['Negocios activos', data?.negociosActivos || 0, <DashboardOutlinedIcon key="active" color="success" />],
@@ -258,16 +280,17 @@ export default function PlatformConsole() {
               </Box>
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
                 <Typography variant="h6" fontWeight={700}>Negocios recientes</Typography>
-                <Button component={Link} to="/plataforma/negocios">Ver todos</Button>
+                {(data?.negocios?.length || 0) > 5 && <Button onClick={openBusinessDialog}>Ver todos</Button>}
               </Stack>
               {businessTable((data?.negocios || []).slice(0, 5))}
             </>}
             {section === 'negocios' && <>
               <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', sm: 'center' }} spacing={2} sx={{ mb: 2 }}>
                 <Typography variant="h6" fontWeight={700}>{data?.totalNegocios || 0} negocios registrados</Typography>
-                <TextField size="small" label="Buscar negocio o propietario" value={query} onChange={(event) => setQuery(event.target.value)} sx={{ minWidth: 280 }} />
+                <TextField size="small" label="Buscar negocio o propietario" value={query} onChange={(event) => updateBusinessQuery(event.target.value)} sx={{ minWidth: 280 }} />
               </Stack>
-              {businessTable(negocios)}
+              {businessTable(paginatedBusinesses)}
+              {businessPagination}
             </>}
             {section === 'usuarios' && <>
               <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>{usersData?.total ?? data?.usuarios ?? 0} usuarios de negocios</Typography>
@@ -313,6 +336,24 @@ export default function PlatformConsole() {
           </>}
         </Box>
       </Box>
+      <Dialog open={businessDialogOpen} onClose={() => setBusinessDialogOpen(false)} maxWidth="xl" fullWidth>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          Todos los negocios ({data?.totalNegocios || 0})
+          <IconButton aria-label="Cerrar lista de negocios" onClick={() => setBusinessDialogOpen(false)}><CloseIcon /></IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <TextField
+            size="small"
+            label="Buscar negocio o propietario"
+            value={query}
+            onChange={(event) => updateBusinessQuery(event.target.value)}
+            sx={{ mb: 2, minWidth: { sm: 300 } }}
+            fullWidth={isMobile}
+          />
+          {businessTable(paginatedBusinesses)}
+          {businessPagination}
+        </DialogContent>
+      </Dialog>
       <Dialog open={detailLoading || Boolean(detail)} onClose={() => { if (!saving) setDetail(null); }} maxWidth="md" fullWidth>
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           {detail?.nombre || 'Cargando negocio'}
