@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Alert, Box, Button, CircularProgress, Paper, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, IconButton, Paper, Stack, TextField, Typography } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { Link, useNavigate } from 'react-router-dom';
 import { registrarNegocio } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -31,7 +32,14 @@ export default function Register() {
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'grid', placeItems: 'center', bgcolor: '#020617', p: 2 }}>
-      <Paper sx={{ width: '100%', maxWidth: 480, p: { xs: 3, sm: 5 }, borderRadius: 3 }}>
+      <Paper sx={{ position: 'relative', width: '100%', maxWidth: 480, p: { xs: 3, sm: 5 }, borderRadius: 3 }}>
+        <IconButton
+          aria-label="Cerrar registro"
+          onClick={() => navigate('/login')}
+          sx={{ position: 'absolute', top: 12, right: 12 }}
+        >
+          <CloseIcon />
+        </IconButton>
         <Stack spacing={2.5} component="form" onSubmit={submit}>
           <Box component="img" src={logo} alt="Possail" sx={{ width: 125, alignSelf: 'center' }} />
           <Typography variant="h5" fontWeight={700}>Crea el espacio de tu negocio</Typography>
