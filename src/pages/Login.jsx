@@ -106,14 +106,8 @@ export default function Login({ platform = false }) {
           position: 'absolute',
           top: { sm: 24, md: 36 },
           left: { sm: 24, md: 36 },
-          px: 2.5,
-          py: 1.75,
-          borderRadius: 2,
           color: '#fff',
-          backgroundColor: 'rgba(2, 6, 23, 0.68)',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          backdropFilter: 'blur(12px)',
-          boxShadow: '0 12px 32px rgba(0, 0, 0, 0.2)',
+          textShadow: '0 2px 12px rgba(0, 0, 0, 0.85)',
           pointerEvents: 'none',
         }}>
           <Typography component="time" dateTime={now.toISOString()} sx={{
