@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box,
   TextField,
@@ -25,8 +25,21 @@ export default function Login({ platform = false }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [now, setNow] = useState(() => new Date());
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const interval = window.setInterval(() => setNow(new Date()), 1000);
+    return () => window.clearInterval(interval);
+  }, []);
+
+  const time = new Intl.DateTimeFormat('es-CL', {
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
+  }).format(now);
+  const date = new Intl.DateTimeFormat('es-CL', {
+    weekday: 'long', day: 'numeric', month: 'long',
+  }).format(now);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -75,12 +88,46 @@ export default function Login({ platform = false }) {
       <Box
         sx={{
           flex: 1,
-          backgroundImage: `url(${posBackground})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          filter: 'brightness(0.7) saturate(1.1)',
+          display: { xs: 'none', sm: 'block' },
+          position: 'relative',
+          minWidth: 0,
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: `url(${posBackground})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            filter: 'brightness(0.7) saturate(1.1)',
+          },
         }}
-      />
+      >
+        <Box sx={{
+          position: 'absolute',
+          top: { sm: 24, md: 36 },
+          left: { sm: 24, md: 36 },
+          px: 2.5,
+          py: 1.75,
+          borderRadius: 2,
+          color: '#fff',
+          backgroundColor: 'rgba(2, 6, 23, 0.68)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          backdropFilter: 'blur(12px)',
+          boxShadow: '0 12px 32px rgba(0, 0, 0, 0.2)',
+          pointerEvents: 'none',
+        }}>
+          <Typography component="time" dateTime={now.toISOString()} sx={{
+            display: 'block', fontFamily: 'monospace', fontSize: { sm: 30, md: 38 },
+            fontWeight: 600, lineHeight: 1.15, letterSpacing: '0.06em',
+            fontVariantNumeric: 'tabular-nums',
+          }}>
+            {time}
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.78)', mt: 0.5, textTransform: 'capitalize' }}>
+            {date}
+          </Typography>
+        </Box>
+      </Box>
 
       {/* Panel derecho */}
       <Box
