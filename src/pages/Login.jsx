@@ -18,9 +18,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Link as RouterLink } from 'react-router-dom';
 import logo from '../possail.png';
-
-const BACKGROUND_IMAGE =
-  'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1600&q=80';
+import posBackground from '../assets/POS.jpg';
 
 export default function Login({ platform = false }) {
   const [email, setEmail] = useState('');
@@ -77,7 +75,7 @@ export default function Login({ platform = false }) {
       <Box
         sx={{
           flex: 1,
-          backgroundImage: `url(${BACKGROUND_IMAGE})`,
+          backgroundImage: `url(${posBackground})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           filter: 'brightness(0.7) saturate(1.1)',
