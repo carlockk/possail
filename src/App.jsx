@@ -56,7 +56,7 @@ export default function App() {
   const [localNoticeMessage, setLocalNoticeMessage] = useState('');
   const [backgroundFeaturesReady, setBackgroundFeaturesReady] = useState(false);
   const location = useLocation();
-  const isLoginRoute = location.pathname === '/login' || location.pathname === '/registro';
+  const isLoginRoute = location.pathname === '/login' || location.pathname === '/registro' || location.pathname === '/plataforma/login';
   const isPlatformRoute = location.pathname.startsWith('/plataforma');
   const isStandaloneRoute = isLoginRoute || isPlatformRoute;
   const isPlatformAdmin = usuario?.rol === 'platform_admin';
@@ -176,6 +176,7 @@ export default function App() {
           <Routes>
             <Route path="/login" element={!usuario ? <Login /> : <Navigate to={isPlatformAdmin ? '/plataforma' : esMesero ? '/restaurante' : '/dashboard'} />} />
             <Route path="/registro" element={!usuario ? <Register /> : <Navigate to={rutaInicio} />} />
+            <Route path="/plataforma/login" element={!usuario ? <Login platform /> : <Navigate to={rutaInicio} />} />
             <Route path="/plataforma" element={isPlatformAdmin ? <PlatformDashboard /> : <Navigate to={usuario ? rutaInicio : '/login'} />} />
             <Route path="/checkout/result" element={<CheckoutResult />} />
             <Route path="/" element={!usuario ? <Navigate to="/login" /> : isPlatformAdmin ? <Navigate to="/plataforma" /> : esMesero ? <Navigate to="/restaurante" /> : <Productos />} />

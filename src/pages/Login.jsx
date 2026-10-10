@@ -8,7 +8,8 @@ import {
   InputAdornment,
   Stack,
   CircularProgress,
-  Link
+  Link,
+  Alert
 } from '@mui/material';
 import EmailIcon from '@mui/icons-material/EmailOutlined';
 import LockIcon from '@mui/icons-material/LockOutlined';
@@ -21,9 +22,10 @@ import logo from '../possail.png';
 const BACKGROUND_IMAGE =
   'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1600&q=80';
 
-export default function Login() {
+export default function Login({ platform = false }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -31,20 +33,29 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password || loading) return;
+    setError('');
     try {
       setLoading(true);
       const res = await loginUsuario({ email, password });
+      if (platform && res.data?.rol !== 'platform_admin') {
+        setError('Esta cuenta pertenece a un negocio. Ingresa desde el acceso al sistema.');
+        return;
+      }
+      if (!platform && res.data?.rol === 'platform_admin') {
+        setError('La cuenta global ingresa desde Plataforma. Usa el enlace de abajo.');
+        return;
+      }
       login(res.data);
-      navigate(res.data?.rol === 'platform_admin' ? '/plataforma' : '/dashboard');
+      navigate(platform ? '/plataforma' : '/dashboard');
     } catch (err) {
       const status = err?.response?.status;
       const backendMsg = err?.response?.data?.error;
       if (!status) {
-        alert('No se pudo conectar al servidor (CORS/red).');
+        setError('No se pudo conectar al servidor.');
       } else if (status === 401) {
-        alert(backendMsg || 'Credenciales inválidas');
+        setError(backendMsg || 'Credenciales inválidas');
       } else {
-        alert(backendMsg || 'No se pudo iniciar sesión');
+        setError(backendMsg || 'No se pudo iniciar sesión');
       }
     } finally {
       setLoading(false);
@@ -117,19 +128,22 @@ export default function Login() {
               variant="h5"
               sx={{ fontWeight: 700, color: '#fff', mt: 1 }}
             >
-              Sistema de Punto de Venta
+              {platform ? 'Administración de plataforma' : 'Sistema de Punto de Venta'}
             </Typography>
             <Typography
               variant="body2"
               sx={{ color: '#9ca3af', mt: 1 }}
             >
-              Gestiona inventario, tickets y cajas desde un solo lugar.
+              {platform
+                ? 'Acceso reservado al administrador global de Possail.'
+                : 'Gestiona inventario, tickets y cajas desde un solo lugar.'}
             </Typography>
           </Box>
 
           {/* Formulario */}
           <Box component="form" onSubmit={handleSubmit} noValidate>
             <Stack spacing={2.5}>
+              {error && <Alert severity="error">{error}</Alert>}
               <TextField
                 label="Correo electrónico"
                 type="email"
@@ -238,7 +252,7 @@ export default function Login() {
                     <span>Ingresando...</span>
                   </Stack>
                 ) : (
-                  'Iniciar sesión'
+                  platform ? 'Entrar a plataforma' : 'Iniciar sesión'
                 )}
               </Button>
             </Stack>
@@ -246,10 +260,22 @@ export default function Login() {
 
           {/* Pie */}
           <Box sx={{ mt: 3, textAlign: 'center' }}>
-            <Typography variant="body2" sx={{ color: '#cbd5e1', mb: 1 }}>
-              ¿Tu negocio aún no tiene cuenta?{' '}
-              <Link component={RouterLink} to="/registro" sx={{ color: '#60a5fa' }}>Crear cuenta</Link>
-            </Typography>
+            {platform ? (
+              <Typography variant="body2" sx={{ color: '#cbd5e1', mb: 1 }}>
+                <Link component={RouterLink} to="/login" sx={{ color: '#60a5fa' }}>Volver al acceso al sistema</Link>
+              </Typography>
+            ) : (
+              <>
+                <Typography variant="body2" sx={{ color: '#cbd5e1', mb: 1 }}>
+                  ¿Tu negocio aún no tiene cuenta?{' '}
+                  <Link component={RouterLink} to="/registro" sx={{ color: '#60a5fa' }}>Crear cuenta</Link>
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#cbd5e1', mb: 1 }}>
+                  <Link component={RouterLink} to="/plataforma/login" sx={{ color: '#60a5fa' }}>Plataforma</Link>
+                  {' · '}Acceso del administrador global
+                </Typography>
+              </>
+            )}
             <Typography
               variant="caption"
               sx={{ color: '#9ca3af', fontSize: 12, display: 'block', mb: 1 }}
