@@ -78,7 +78,7 @@ API.interceptors.request.use((config) => {
         const localParsed = JSON.parse(storedLocal);
         localId = typeof localParsed === 'string' ? localParsed : (localParsed?._id || '');
       }
-    } catch (err) {
+    } catch {
       // ignore parse errors
     }
   }
@@ -222,6 +222,10 @@ export const obtenerResumenPorRango = (inicio, fin) =>
 // 👤 Usuarios
 // ─────────────────────────────────────────────
 export const loginUsuario = (data) => API.post('/auth/login', data);
+export const registrarNegocio = (data) => API.post('/auth/register', data);
+export const obtenerResumenPlataforma = () => API.get('/plataforma/resumen');
+export const obtenerNegocioPlataforma = (id) => API.get(`/plataforma/negocios/${id}`);
+export const cambiarEstadoNegocio = (id, estado) => API.patch(`/plataforma/negocios/${id}/estado`, { estado });
 
 export const crearUsuario = (data) => API.post('/usuarios', data);
 

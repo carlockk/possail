@@ -85,7 +85,7 @@ export default function Locales() {
     try {
       const res = await obtenerLocales();
       setLocales(res.data || []);
-    } catch (err) {
+    } catch {
       setError('No se pudieron cargar los locales.');
     } finally {
       setLoading(false);
@@ -301,7 +301,7 @@ export default function Locales() {
               Locales
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Administra los locales disponibles en el sistema.
+              Administra los locales de tu negocio.
             </Typography>
           </Box>
 
@@ -318,6 +318,11 @@ export default function Locales() {
 
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         {info && <Alert severity="success" sx={{ mb: 2 }}>{info}</Alert>}
+        {!loading && isAdmin && locales.length === 0 && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Comienza creando tu primer local. Después podrás agregar productos y usuarios.
+          </Alert>
+        )}
 
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>

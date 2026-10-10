@@ -29,6 +29,8 @@ const CrearUsuario = lazy(() => import('./pages/CrearUsuario'));
 const ListaUsuarios = lazy(() => import('./pages/ListaUsuarios'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const PlatformDashboard = lazy(() => import('./pages/PlatformDashboard'));
 const TicketsAbiertos = lazy(() => import('./pages/TicketsAbiertos'));
 const Locales = lazy(() => import('./pages/Locales'));
 const Insumos = lazy(() => import('./pages/Insumos'));
@@ -54,11 +56,14 @@ export default function App() {
   const [localNoticeMessage, setLocalNoticeMessage] = useState('');
   const [backgroundFeaturesReady, setBackgroundFeaturesReady] = useState(false);
   const location = useLocation();
-  const isLoginRoute = location.pathname === '/login';
+  const isLoginRoute = location.pathname === '/login' || location.pathname === '/registro';
+  const isPlatformRoute = location.pathname.startsWith('/plataforma');
+  const isStandaloneRoute = isLoginRoute || isPlatformRoute;
+  const isPlatformAdmin = usuario?.rol === 'platform_admin';
   const esMesero = usuario?.rol === 'mesero';
   const esAdmin = usuario?.rol === 'admin' || usuario?.rol === 'superadmin';
-  const usuarioGeneral = Boolean(usuario) && !esMesero;
-  const rutaInicio = esMesero ? '/restaurante' : '/';
+  const usuarioGeneral = Boolean(usuario) && !esMesero && !isPlatformAdmin;
+  const rutaInicio = isPlatformAdmin ? '/plataforma' : esMesero ? '/restaurante' : '/';
 
   const toggleDrawer = () => setMobileOpen(!mobileOpen);
   const activeDrawerWidth = !isMobile && sidebarCollapsed ? collapsedDrawerWidth : drawerWidth;
@@ -75,7 +80,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (isLoginRoute) {
+    if (isStandaloneRoute) {
       setBackgroundFeaturesReady(false);
       return undefined;
     }
@@ -100,14 +105,14 @@ export default function App() {
       cancelled = true;
       window.clearTimeout(timeoutId);
     };
-  }, [isLoginRoute]);
+  }, [isStandaloneRoute]);
 
   return (
     <CajaProvider>
-      <Box sx={{ display: isLoginRoute ? 'block' : 'flex', minHeight: '100vh' }}>
+      <Box sx={{ display: isStandaloneRoute ? 'block' : 'flex', minHeight: '100vh' }}>
         <CssBaseline />
 
-        {isMobile && !isLoginRoute && (
+        {isMobile && !isStandaloneRoute && (
           <AppBar position="fixed" sx={{ zIndex: theme.zIndex.drawer + 1 }}>
             <Toolbar>
               <IconButton color="inherit" edge="start" onClick={toggleDrawer}>
@@ -120,7 +125,7 @@ export default function App() {
           </AppBar>
         )}
 
-        {!isLoginRoute && (
+        {!isStandaloneRoute && (
           <Suspense fallback={null}>
             <Sidebar
               mobileOpen={mobileOpen}
@@ -132,7 +137,7 @@ export default function App() {
           </Suspense>
         )}
 
-        {ENABLE_BACKGROUND_WATCHERS && backgroundFeaturesReady && !esMesero && (
+        {ENABLE_BACKGROUND_WATCHERS && backgroundFeaturesReady && !esMesero && !isPlatformAdmin && (
           <Suspense fallback={null}>
             <PedidosWebWatcher />
             <RestauranteCobroWatcher />
@@ -142,7 +147,7 @@ export default function App() {
         <Box
           component="main"
           sx={
-            isLoginRoute
+            isStandaloneRoute
               ? {
                   flexGrow: 1,
                   width: '100%',
@@ -169,9 +174,11 @@ export default function App() {
         >
           <Suspense fallback={<Box sx={{ p: 3 }}><Typography>Cargando...</Typography></Box>}>
           <Routes>
-            <Route path="/login" element={!usuario ? <Login /> : <Navigate to={esMesero ? '/restaurante' : '/dashboard'} />} />
+            <Route path="/login" element={!usuario ? <Login /> : <Navigate to={isPlatformAdmin ? '/plataforma' : esMesero ? '/restaurante' : '/dashboard'} />} />
+            <Route path="/registro" element={!usuario ? <Register /> : <Navigate to={rutaInicio} />} />
+            <Route path="/plataforma" element={isPlatformAdmin ? <PlatformDashboard /> : <Navigate to={usuario ? rutaInicio : '/login'} />} />
             <Route path="/checkout/result" element={<CheckoutResult />} />
-            <Route path="/" element={!usuario ? <Navigate to="/login" /> : esMesero ? <Navigate to="/restaurante" /> : <Productos />} />
+            <Route path="/" element={!usuario ? <Navigate to="/login" /> : isPlatformAdmin ? <Navigate to="/plataforma" /> : esMesero ? <Navigate to="/restaurante" /> : <Productos />} />
             <Route
               path="/crear"
               element={esAdmin ? <CrearProducto /> : <Navigate to={rutaInicio} />}

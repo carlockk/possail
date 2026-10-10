@@ -15,6 +15,7 @@ import LockIcon from '@mui/icons-material/LockOutlined';
 import { loginUsuario } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import logo from '../possail.png';
 
 const BACKGROUND_IMAGE =
@@ -34,7 +35,7 @@ export default function Login() {
       setLoading(true);
       const res = await loginUsuario({ email, password });
       login(res.data);
-      navigate('/dashboard');
+      navigate(res.data?.rol === 'platform_admin' ? '/plataforma' : '/dashboard');
     } catch (err) {
       const status = err?.response?.status;
       const backendMsg = err?.response?.data?.error;
@@ -245,6 +246,10 @@ export default function Login() {
 
           {/* Pie */}
           <Box sx={{ mt: 3, textAlign: 'center' }}>
+            <Typography variant="body2" sx={{ color: '#cbd5e1', mb: 1 }}>
+              ¿Tu negocio aún no tiene cuenta?{' '}
+              <Link component={RouterLink} to="/registro" sx={{ color: '#60a5fa' }}>Crear cuenta</Link>
+            </Typography>
             <Typography
               variant="caption"
               sx={{ color: '#9ca3af', fontSize: 12, display: 'block', mb: 1 }}
