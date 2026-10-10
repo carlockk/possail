@@ -30,8 +30,24 @@ export default function Login({ platform = false }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const interval = window.setInterval(() => setNow(new Date()), 1000);
-    return () => window.clearInterval(interval);
+    let timeout;
+    const tick = () => {
+      setNow(new Date());
+      window.clearTimeout(timeout);
+      timeout = window.setTimeout(tick, 1000 - (Date.now() % 1000) + 20);
+    };
+    const refreshWhenVisible = () => {
+      if (!document.hidden) tick();
+    };
+
+    tick();
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+    window.addEventListener('focus', refreshWhenVisible);
+    return () => {
+      window.clearTimeout(timeout);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
+      window.removeEventListener('focus', refreshWhenVisible);
+    };
   }, []);
 
   const time = new Intl.DateTimeFormat('es-CL', {
