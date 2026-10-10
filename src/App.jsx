@@ -181,6 +181,7 @@ export default function App() {
             <Route path="/plataforma/negocios" element={isPlatformAdmin ? <PlatformDashboard /> : <Navigate to={usuario ? rutaInicio : '/login'} />} />
             <Route path="/plataforma/usuarios" element={isPlatformAdmin ? <PlatformDashboard /> : <Navigate to={usuario ? rutaInicio : '/login'} />} />
             <Route path="/plataforma/planes" element={isPlatformAdmin ? <PlatformDashboard /> : <Navigate to={usuario ? rutaInicio : '/login'} />} />
+            <Route path="/plataforma/seguridad" element={isPlatformAdmin ? <PlatformDashboard /> : <Navigate to={usuario ? rutaInicio : '/login'} />} />
             <Route path="/checkout/result" element={<CheckoutResult />} />
             <Route path="/" element={!usuario ? <Navigate to="/login" /> : isPlatformAdmin ? <Navigate to="/plataforma" /> : esMesero ? <Navigate to="/restaurante" /> : <Productos />} />
             <Route

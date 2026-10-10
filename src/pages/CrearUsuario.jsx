@@ -21,7 +21,7 @@ export default function CrearUsuario() {
       try {
         const res = await obtenerLocales();
         setLocales(res.data || []);
-      } catch (err) {
+      } catch {
         setLocales([]);
       }
     };
@@ -45,8 +45,8 @@ export default function CrearUsuario() {
   const handleSubmit = async () => {
     const { nombre, email, password, rol, local } = form;
 
-    if (!nombre || !email || !password) {
-      alert('Todos los campos son obligatorios');
+    if (!nombre || !email || password.length < 12 || new TextEncoder().encode(password).length > 72) {
+      alert('Completa los campos y usa una contraseña de 12 a 72 bytes');
       return;
     }
     const repartidorGlobal = usuario?.rol === 'superadmin' && rol === 'repartidor' && local === '__all__';
@@ -99,6 +99,8 @@ export default function CrearUsuario() {
         label="Contraseña"
         name="password"
         type="password"
+        inputProps={{ minLength: 12 }}
+        helperText="Mínimo 12 caracteres"
         fullWidth
         value={form.password}
         onChange={handleChange}

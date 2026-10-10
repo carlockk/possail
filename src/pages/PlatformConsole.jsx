@@ -10,6 +10,7 @@ import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 import CreditCardOutlinedIcon from '@mui/icons-material/CreditCardOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
@@ -18,7 +19,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useThemeMode } from '../context/ThemeContext';
 import {
-  cambiarEstadoNegocio, obtenerNegocioPlataforma, obtenerResumenPlataforma,
+  cambiarEstadoNegocio, cambiarMiPassword, obtenerNegocioPlataforma, obtenerResumenPlataforma,
   obtenerUsuariosPlataforma
 } from '../services/api';
 import logo from '../possail.png';
@@ -29,12 +30,14 @@ const menu = [
   { key: 'negocios', label: 'Negocios', path: '/plataforma/negocios', icon: <StorefrontOutlinedIcon /> },
   { key: 'usuarios', label: 'Usuarios', path: '/plataforma/usuarios', icon: <PeopleAltOutlinedIcon /> },
   { key: 'planes', label: 'Planes y cobros', path: '/plataforma/planes', icon: <CreditCardOutlinedIcon /> },
+  { key: 'seguridad', label: 'Seguridad', path: '/plataforma/seguridad', icon: <LockOutlinedIcon /> },
 ];
 const descriptions = {
   resumen: 'Actividad general de los negocios registrados.',
   negocios: 'Revisa cada espacio de trabajo y administra su acceso.',
   usuarios: 'Cuentas creadas dentro de los negocios.',
   planes: 'Estado comercial de cada negocio.',
+  seguridad: 'Protege el acceso a la administración global.',
 };
 const dateLabel = (value) => value ? new Date(value).toLocaleDateString('es-CL') : '—';
 const billingLabel = (value) => value === 'no_configurado' || !value ? 'Sin configurar' : value;
@@ -47,7 +50,8 @@ export default function PlatformConsole() {
   const pathname = useLocation().pathname;
   const section = pathname.endsWith('/negocios') ? 'negocios'
     : pathname.endsWith('/usuarios') ? 'usuarios'
-      : pathname.endsWith('/planes') ? 'planes' : 'resumen';
+      : pathname.endsWith('/planes') ? 'planes'
+        : pathname.endsWith('/seguridad') ? 'seguridad' : 'resumen';
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -59,6 +63,29 @@ export default function PlatformConsole() {
   const [usersPage, setUsersPage] = useState(1);
   const [usersData, setUsersData] = useState(null);
   const [usersLoading, setUsersLoading] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmation: '' });
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+
+  const submitPassword = async (event) => {
+    event.preventDefault();
+    if (passwordSaving) return;
+    if (passwordForm.newPassword !== passwordForm.confirmation) {
+      setPasswordError('Las contraseñas nuevas no coinciden.');
+      return;
+    }
+    setPasswordSaving(true);
+    setPasswordError('');
+    try {
+      await cambiarMiPassword({ currentPassword: passwordForm.currentPassword, newPassword: passwordForm.newPassword });
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmation: '' });
+      logout();
+    } catch (err) {
+      setPasswordError(err?.response?.data?.error || 'No se pudo cambiar la contraseña.');
+    } finally {
+      setPasswordSaving(false);
+    }
+  };
 
   const refreshSummary = useCallback(async () => {
     try {
@@ -272,6 +299,17 @@ export default function PlatformConsole() {
               <Alert severity="info" sx={{ mb: 3 }}>Los cobros automáticos aún no están configurados. Esta sección muestra el plan y el estado preparado para cada negocio.</Alert>
               {businessTable(data?.negocios || [], true)}
             </>}
+            {section === 'seguridad' && <Paper component="form" onSubmit={submitPassword} sx={{ p: 3, maxWidth: 500, borderRadius: 2 }}>
+              <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>Cambiar contraseña</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>Al guardarla, se cerrarán todas las sesiones de esta cuenta.</Typography>
+              {passwordError && <Alert severity="error" sx={{ mb: 2 }}>{passwordError}</Alert>}
+              <Stack spacing={2}>
+                <TextField label="Contraseña actual" type="password" autoComplete="current-password" required value={passwordForm.currentPassword} onChange={(event) => setPasswordForm((value) => ({ ...value, currentPassword: event.target.value }))} />
+                <TextField label="Nueva contraseña" type="password" autoComplete="new-password" required inputProps={{ minLength: 12 }} helperText="Mínimo 12 caracteres" value={passwordForm.newPassword} onChange={(event) => setPasswordForm((value) => ({ ...value, newPassword: event.target.value }))} />
+                <TextField label="Repetir nueva contraseña" type="password" autoComplete="new-password" required inputProps={{ minLength: 12 }} value={passwordForm.confirmation} onChange={(event) => setPasswordForm((value) => ({ ...value, confirmation: event.target.value }))} />
+                <Button type="submit" variant="contained" disabled={passwordSaving}>{passwordSaving ? 'Guardando…' : 'Guardar contraseña'}</Button>
+              </Stack>
+            </Paper>}
           </>}
         </Box>
       </Box>

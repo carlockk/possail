@@ -105,7 +105,7 @@ API.interceptors.response.use(
     const isLocalRequired = status === 400 && backendMessage.includes('local requerido');
     const method = String(error?.config?.method || '').toLowerCase();
 
-    if (status === 401 && !url.includes('/auth/login') && typeof window !== 'undefined') {
+    if (status === 401 && !url.includes('/auth/login') && !url.includes('/auth/password') && typeof window !== 'undefined') {
       window.dispatchEvent(
         new CustomEvent(SESSION_EXPIRED_EVENT, {
           detail: { message: 'Tu sesion expiro. Inicia sesion nuevamente.' },
@@ -223,6 +223,7 @@ export const obtenerResumenPorRango = (inicio, fin) =>
 // ─────────────────────────────────────────────
 export const loginUsuario = (data) => API.post('/auth/login', data);
 export const registrarNegocio = (data) => API.post('/auth/register', data);
+export const cambiarMiPassword = (data) => API.post('/auth/password', data);
 export const obtenerResumenPlataforma = () => API.get('/plataforma/resumen');
 export const obtenerUsuariosPlataforma = (pagina = 1) => API.get('/plataforma/usuarios', { params: { pagina } });
 export const obtenerNegocioPlataforma = (id) => API.get(`/plataforma/negocios/${id}`);
