@@ -32,7 +32,8 @@ const readStoredSession = () => {
     if (!stored) return emptySession;
     const usuario = JSON.parse(stored);
     const sessionDeadline = decodeJwtExpMs(usuario?.token);
-    if (!usuario?.token || (sessionDeadline && sessionDeadline <= Date.now())) {
+    if (!usuario?.token || (usuario?.rol !== 'platform_admin' && !usuario?.tenantId) ||
+        (sessionDeadline && sessionDeadline <= Date.now())) {
       clearSessionStorage();
       return emptySession;
     }
