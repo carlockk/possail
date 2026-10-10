@@ -33,6 +33,7 @@ const Register = lazy(() => import('./pages/Register'));
 const PlatformDashboard = lazy(() => import('./pages/PlatformConsole'));
 const TicketsAbiertos = lazy(() => import('./pages/TicketsAbiertos'));
 const Locales = lazy(() => import('./pages/Locales'));
+const Cuenta = lazy(() => import('./pages/Cuenta'));
 const Insumos = lazy(() => import('./pages/Insumos'));
 const ConfigRecibo = lazy(() => import('./pages/ConfigRecibo'));
 const Agregados = lazy(() => import('./pages/Agregados'));
@@ -212,6 +213,7 @@ export default function App() {
             <Route path="/pedidos-web" element={usuarioGeneral ? <PedidosWeb /> : <Navigate to={rutaInicio} />} />
             <Route path="/restaurante" element={usuario ? <Restaurante /> : <Navigate to="/login" />} />
             <Route path="/locales" element={usuarioGeneral ? <Locales /> : <Navigate to={rutaInicio} />} />
+            <Route path="/cuenta" element={usuario?.rol === 'superadmin' ? <Cuenta /> : <Navigate to={rutaInicio} />} />
             <Route path="/insumos" element={usuarioGeneral ? <Insumos /> : <Navigate to={rutaInicio} />} />
             <Route path="/agregados" element={usuarioGeneral ? <Agregados /> : <Navigate to={rutaInicio} />} />
             <Route path="/descuentos" element={esAdmin ? <Descuentos /> : <Navigate to={rutaInicio} />} />

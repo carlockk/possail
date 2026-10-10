@@ -42,6 +42,7 @@ import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import StoreIcon from '@mui/icons-material/StoreOutlined';
 import StorefrontIcon from '@mui/icons-material/StorefrontOutlined';
 import PeopleAltIcon from '@mui/icons-material/PeopleAltOutlined';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccountsOutlined';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import LanguageIcon from '@mui/icons-material/Language';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -517,6 +518,14 @@ export default function Sidebar({
                 <ListItemButton component={Link} to="/usuarios" sx={{ px: 3, py: 1.5, color: '#d1d5db' }}>
                   <Box sx={{ mr: 2 }}><PeopleAltIcon /></Box>
                   <ListItemText primary="Usuarios" />
+                </ListItemButton>
+              </ListItem>
+            )}
+            {usuario?.rol === 'superadmin' && (
+              <ListItem disablePadding>
+                <ListItemButton component={Link} to="/cuenta" sx={{ px: 3, py: 1.5, color: '#d1d5db' }}>
+                  <Box sx={{ mr: 2 }}><ManageAccountsIcon /></Box>
+                  <ListItemText primary="Mi cuenta" />
                 </ListItemButton>
               </ListItem>
             )}
