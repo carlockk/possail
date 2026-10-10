@@ -6,7 +6,7 @@ export const SESSION_EXPIRED_EVENT = 'app:session-expired';
 // ✅ Resolver base de API y base de archivos a partir de la variable de entorno
 const rawBase = import.meta.env.VITE_BACKEND_URL || (
   import.meta.env.PROD
-    ? 'https://davimotorsback.onrender.com'
+    ? 'https://possailback.onrender.com'
     : 'http://localhost:5000'
 );
 const normalizedBase = rawBase.replace(/\/+$/, '');
