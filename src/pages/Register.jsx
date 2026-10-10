@@ -32,18 +32,38 @@ export default function Register() {
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'grid', placeItems: 'center', bgcolor: '#020617', p: 2 }}>
-      <Paper sx={{ position: 'relative', width: '100%', maxWidth: 480, p: { xs: 3, sm: 5 }, borderRadius: 3 }}>
+      <Paper sx={{
+        position: 'relative',
+        width: '100%',
+        maxWidth: 480,
+        p: { xs: 3, sm: 5 },
+        borderRadius: 3,
+        color: '#f8fafc',
+        background: 'linear-gradient(135deg, #0f172a, #020617)',
+        border: '1px solid rgba(59,130,246,0.3)',
+        boxShadow: '0 24px 60px rgba(0,0,0,0.45)',
+        '& .MuiInputLabel-root': { color: '#94a3b8' },
+        '& .MuiInputLabel-root.Mui-focused': { color: '#60a5fa' },
+        '& .MuiOutlinedInput-root': {
+          color: '#f8fafc',
+          bgcolor: 'rgba(255,255,255,0.05)',
+          '& fieldset': { borderColor: 'rgba(148,163,184,0.35)' },
+          '&:hover fieldset': { borderColor: '#60a5fa' },
+          '&.Mui-focused fieldset': { borderColor: '#3b82f6' },
+        },
+        '& .MuiFormHelperText-root': { color: '#94a3b8' },
+      }}>
         <IconButton
           aria-label="Cerrar registro"
           onClick={() => navigate('/login')}
-          sx={{ position: 'absolute', top: 12, right: 12 }}
+          sx={{ position: 'absolute', top: 12, right: 12, color: '#cbd5e1' }}
         >
           <CloseIcon />
         </IconButton>
         <Stack spacing={2.5} component="form" onSubmit={submit}>
-          <Box component="img" src={logo} alt="Possail" sx={{ width: 125, alignSelf: 'center' }} />
+          <Box component="img" src={logo} alt="Possail" sx={{ width: 165, height: 72, objectFit: 'contain', alignSelf: 'center' }} />
           <Typography variant="h5" fontWeight={700}>Crea el espacio de tu negocio</Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" sx={{ color: '#cbd5e1' }}>
             Tendrás acceso a productos, locales, ventas y usuarios en un espacio propio.
           </Typography>
           {error && <Alert severity="error">{error}</Alert>}
@@ -51,11 +71,11 @@ export default function Register() {
           <TextField name="nombre" label="Tu nombre" value={form.nombre} onChange={change} required inputProps={{ maxLength: 80 }} />
           <TextField name="email" label="Correo electrónico" type="email" value={form.email} onChange={change} required autoComplete="email" />
           <TextField name="password" label="Contraseña" type="password" value={form.password} onChange={change} required inputProps={{ minLength: 12 }} helperText="Mínimo 12 caracteres" autoComplete="new-password" />
-          <Button type="submit" variant="contained" size="large" disabled={loading}>
+          <Button type="submit" variant="contained" size="large" disabled={loading} sx={{ py: 1.4, textTransform: 'none', fontWeight: 600, background: 'linear-gradient(135deg, #1d4ed8, #2563eb)' }}>
             {loading ? <CircularProgress size={22} color="inherit" /> : 'Crear cuenta'}
           </Button>
           <Typography variant="body2" textAlign="center">
-            ¿Ya tienes cuenta? <Link to="/login">Iniciar sesión</Link>
+            ¿Ya tienes cuenta? <Link to="/login" style={{ color: '#60a5fa' }}>Iniciar sesión</Link>
           </Typography>
         </Stack>
       </Paper>
