@@ -26,6 +26,7 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/EditOutlined';
 import DeleteIcon from '@mui/icons-material/DeleteOutline';
 import RoomOutlinedIcon from '@mui/icons-material/RoomOutlined';
+import { useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../context/AuthContext';
 import {
@@ -61,7 +62,8 @@ const emptyForm = {
 };
 
 export default function Locales() {
-  const { usuario } = useAuth();
+  const { usuario, selectedLocal, seleccionarLocal } = useAuth();
+  const navigate = useNavigate();
   const isAdmin = usuario?.rol === 'admin' || usuario?.rol === 'superadmin';
 
   const [locales, setLocales] = useState([]);
@@ -323,6 +325,9 @@ export default function Locales() {
             Comienza creando tu primer local. Después podrás agregar productos y usuarios.
           </Alert>
         )}
+        {!loading && usuario?.rol === 'superadmin' && locales.length > 0 && !selectedLocal?._id && (
+          <Alert severity="info" sx={{ mb: 2 }}>Selecciona un local con el botón Entrar para comenzar.</Alert>
+        )}
 
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
@@ -376,6 +381,17 @@ export default function Locales() {
                     </TableCell>
                     {isAdmin && (
                       <TableCell align="right">
+                        {usuario?.rol === 'superadmin' && (
+                          <Button
+                            size="small"
+                            variant={selectedLocal?._id === local._id ? 'outlined' : 'contained'}
+                            disabled={selectedLocal?._id === local._id}
+                            onClick={() => { seleccionarLocal(local); navigate('/dashboard'); }}
+                            sx={{ mr: 1 }}
+                          >
+                            {selectedLocal?._id === local._id ? 'Activo' : 'Entrar'}
+                          </Button>
+                        )}
                         <IconButton onClick={() => openEdit(local)} size="small" sx={{ mr: 0.5 }}>
                           <EditIcon fontSize="small" />
                         </IconButton>

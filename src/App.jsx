@@ -176,7 +176,7 @@ export default function App() {
         >
           <Suspense fallback={<Box sx={{ p: 3 }}><Typography>Cargando...</Typography></Box>}>
           <Routes>
-            <Route path="/login" element={!usuario ? <Login /> : <Navigate to={isPlatformAdmin ? '/plataforma' : esMesero ? '/restaurante' : '/dashboard'} />} />
+            <Route path="/login" element={!usuario ? <Login /> : <Navigate to={isPlatformAdmin ? '/plataforma' : esMesero ? '/restaurante' : usuario?.rol === 'superadmin' ? '/locales' : '/dashboard'} />} />
             <Route path="/registro" element={!usuario ? <Register /> : <Navigate to={rutaInicio} />} />
             <Route path="/plataforma/login" element={!usuario ? <Login platform /> : <Navigate to={rutaInicio} />} />
             <Route path="/plataforma" element={isPlatformAdmin ? <PlatformDashboard /> : <Navigate to={usuario ? rutaInicio : '/login'} />} />

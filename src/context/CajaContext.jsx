@@ -7,11 +7,16 @@ const CajaContext = createContext();
 export const useCaja = () => useContext(CajaContext);
 
 export function CajaProvider({ children }) {
-  const { selectedLocal } = useAuth();
+  const { usuario, selectedLocal } = useAuth();
   const [cajaAbierta, setCajaAbierta] = useState(null);
   const [cajaVerificada, setCajaVerificada] = useState(false);
 
   useEffect(() => {
+    if (!usuario || !selectedLocal?._id) {
+      setCajaAbierta(false);
+      setCajaVerificada(true);
+      return;
+    }
     async function verificarCaja() {
       try {
         setCajaVerificada(false);
@@ -28,7 +33,7 @@ export function CajaProvider({ children }) {
     }
 
     verificarCaja();
-  }, [selectedLocal?._id]);
+  }, [usuario, selectedLocal?._id]);
 
   return (
     <CajaContext.Provider value={{ cajaAbierta, setCajaAbierta, cajaVerificada }}>

@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useState, useEffect, useMemo } from 'react';
-import { SESSION_EXPIRED_EVENT, obtenerModulosNegocio } from '../services/api';
+import { SESSION_EXPIRED_EVENT } from '../services/api';
 import { getModules } from '../lib/modules';
 
 const AuthContext = createContext();
@@ -110,15 +110,6 @@ export function AuthProvider({ children }) {
     window.addEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
     return () => window.removeEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
   }, []);
-
-  useEffect(() => {
-    if (!usuario?.token || usuario.rol === 'platform_admin') return undefined;
-    let cancelled = false;
-    obtenerModulosNegocio()
-      .then((response) => { if (!cancelled) actualizarModulos(response.data.modulos); })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, [usuario?.token, usuario?.rol, actualizarModulos]);
 
   return (
     <AuthContext.Provider value={{ usuario, modulos, actualizarModulos, login, logout, selectedLocal, seleccionarLocal }}>

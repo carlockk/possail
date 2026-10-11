@@ -73,7 +73,7 @@ export default function Login({ platform = false }) {
         return;
       }
       login(res.data);
-      navigate(platform ? '/plataforma' : '/dashboard');
+      navigate(platform ? '/plataforma' : res.data?.rol === 'superadmin' ? '/locales' : res.data?.rol === 'mesero' ? '/restaurante' : '/dashboard');
     } catch (err) {
       const status = err?.response?.status;
       const backendMsg = err?.response?.data?.error;
