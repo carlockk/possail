@@ -52,7 +52,6 @@ import {
   eliminarObservacionInsumo,
   obtenerLocales,
   obtenerUsuarios,
-  obtenerMovimientosInsumo,
   obtenerConfigAlertasInsumos,
   guardarConfigAlertasInsumos,
   enviarResumenAlertasInsumos,
@@ -416,7 +415,6 @@ export default function Insumos() {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [insumos, setInsumos] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
   const [productos, setProductos] = useState([]);
@@ -429,12 +427,9 @@ export default function Insumos() {
 
 
   const [movOpen, setMovOpen] = useState(false);
-  const [movimientos, setMovimientos] = useState([]);
   const [movInsumo, setMovInsumo] = useState(null);
   const [movTipoFijo, setMovTipoFijo] = useState(false);
   const [movTab, setMovTab] = useState('entrada');
-  const [movBusqueda, setMovBusqueda] = useState('');
-  const [movFechas, setMovFechas] = useState([]);
   const [histOpen, setHistOpen] = useState(false);
   const [busqueda, setBusqueda] = useState('');
   const [soloBajoMinimo, setSoloBajoMinimo] = useState(false);
@@ -496,12 +491,10 @@ export default function Insumos() {
     const localId = selectedLocal?._id || null;
     if (isSuperadmin && !localId) {
       setInsumos([]);
-      setLoading(false);
       return;
     }
 
     const requestSeq = ++fetchInsumosSeqRef.current;
-    setLoading(true);
     setError('');
     try {
       const res = await obtenerInsumos({
@@ -509,19 +502,15 @@ export default function Insumos() {
       });
       if (requestSeq !== fetchInsumosSeqRef.current) return;
       setInsumos(res.data || []);
-    } catch (err) {
+    } catch {
       if (requestSeq !== fetchInsumosSeqRef.current) return;
       setError('No se pudieron cargar los productos de bodega.');
-    } finally {
-      if (requestSeq === fetchInsumosSeqRef.current) {
-        setLoading(false);
-      }
     }
   }, [selectedLocal?._id, isSuperadmin, mostrarInsumosOcultos]);
 
   useEffect(() => {
     fetchInsumos();
-  }, [selectedLocal?._id, mostrarInsumosOcultos, isSuperadmin]);
+  }, [fetchInsumos]);
 
   useEffect(() => {
     const cargarCategorias = async () => {
@@ -878,7 +867,7 @@ export default function Insumos() {
       ]);
       setAlertUsers(usuariosRes.data || []);
       setAlertSeleccionados(configRes.data?.usuarios || []);
-    } catch (err) {
+    } catch {
       setError('No se pudieron cargar los usuarios para alertas.');
     } finally {
       setAlertLoading(false);
@@ -1108,66 +1097,21 @@ export default function Insumos() {
     }
   };
 
-  const openMovimientos = async (insumo) => {
-    try {
-      const res = await obtenerMovimientosInsumo(insumo._id);
-      setMovimientos(res.data || []);
-      setMovInsumo(insumo);
-      setMovTipoFijo(false);
-      setMovTab('entrada');
-      setMovBusqueda('');
-      setMovFechas([]);
-      setMovOpen(true);
-    } catch (err) {
-      console.error('Error al cargar movimientos:', err);
-      setError('No se pudieron cargar los movimientos.');
-    }
-  };
-
   const openHistorial = () => {
     setHistOpen(true);
   };
 
-  const openMovimientoTipo = useCallback(async (insumo, tipo) => {
-    try {
-      const movRes = await obtenerMovimientosInsumo(insumo._id);
-      setMovimientos(movRes.data || []);
-      setMovInsumo(insumo);
-      setMovTipoFijo(true);
-      setMovTab(tipo);
-      setMovBusqueda('');
-      setMovFechas([]);
-      setMovOpen(true);
-    } catch (err) {
-      console.error('Error al cargar movimientos:', err);
-      setError('No se pudieron cargar los movimientos.');
-    }
+  const openMovimientoTipo = useCallback((insumo, tipo) => {
+    setMovInsumo(insumo);
+    setMovTipoFijo(true);
+    setMovTab(tipo);
+    setMovOpen(true);
   }, []);
 
   const handleOpenDesc = useCallback((texto) => {
     setDescTexto(texto);
     setDescOpen(true);
   }, []);
-
-  const movimientosFiltrados = useMemo(() => {
-    const texto = movBusqueda.trim().toLowerCase();
-    const [inicio, fin] = movFechas;
-    const inicioDate = inicio ? new Date(inicio.toDate()) : null;
-    const finDate = fin ? new Date(fin.toDate()) : null;
-
-    return movimientos.filter((mov) => {
-      if (movTab && mov.tipo !== movTab) return false;
-      if (texto) {
-        const nota = (mov.nota || '').toLowerCase();
-        if (!nota.includes(texto)) return false;
-      }
-      if (inicioDate && finDate) {
-        const fecha = new Date(mov.fecha);
-        if (fecha < inicioDate || fecha > finDate) return false;
-      }
-      return true;
-    });
-  }, [movimientos, movTab, movBusqueda, movFechas]);
 
   const busquedaNormalizada = useMemo(
     () => normalizarTexto(busqueda),
@@ -2223,7 +2167,6 @@ export default function Insumos() {
         onInfo={setInfo}
         onError={setError}
         onRefreshInsumos={fetchInsumos}
-        onUpdateMovimientos={setMovimientos}
       />
 
       <HistorialDialog

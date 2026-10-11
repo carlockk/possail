@@ -115,10 +115,6 @@ export default function SelectorAgregadosDialog({
     }
   }, [open, producto?._id, variante?._id]);
 
-  useEffect(() => {
-    if (selectionError) setSelectionError('');
-  }, [seleccionados]);
-
   const buildAgregadoPayload = (agregado) => ({
     agregadoId: agregado._id || agregado.agregadoId || null,
     nombre: agregado.nombre,
@@ -126,6 +122,7 @@ export default function SelectorAgregadosDialog({
   });
 
   const toggleAgregado = (agregado) => {
+    setSelectionError('');
     const agregadoId = String(agregado._id || agregado.agregadoId || '');
     setSeleccionados((prev) => {
       const existe = prev.some((agg) => String(agg.agregadoId || agg._id || '') === agregadoId);
@@ -137,6 +134,7 @@ export default function SelectorAgregadosDialog({
   };
 
   const seleccionarUnico = (groupKey, agregado) => {
+    setSelectionError('');
     const agregadoId = agregado._id || agregado.agregadoId;
     if (!agregadoId) return;
     setSeleccionados((prev) => {

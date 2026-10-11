@@ -90,7 +90,7 @@ export default function HorarioTienda() {
         const data = res?.data || {};
         setHorariosWeb(buildScheduleFromApi(data?.horarios_web));
         setSocials(buildSocialsFromConfig(data));
-      } catch (err) {
+      } catch {
         setError('No se pudo cargar el horario de la tienda.');
       } finally {
         setLoading(false);

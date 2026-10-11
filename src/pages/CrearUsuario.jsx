@@ -6,7 +6,7 @@ import { crearUsuario, obtenerLocales } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 export default function CrearUsuario() {
-  const { usuario, selectedLocal } = useAuth();
+  const { usuario, modulos, selectedLocal } = useAuth();
   const [form, setForm] = useState({
     nombre: '',
     email: '',
@@ -118,8 +118,8 @@ export default function CrearUsuario() {
       >
         <MenuItem value="admin">Admin</MenuItem>
         <MenuItem value="cajero">Cajero</MenuItem>
-        <MenuItem value="mesero">Mesero</MenuItem>
-        <MenuItem value="repartidor">Repartidor</MenuItem>
+        {modulos.restaurante && <MenuItem value="mesero">Mesero</MenuItem>}
+        {modulos.pedidosWeb && <MenuItem value="repartidor">Repartidor</MenuItem>}
       </TextField>
 
       <TextField

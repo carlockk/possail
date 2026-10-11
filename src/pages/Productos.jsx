@@ -432,7 +432,7 @@ export default function Productos() {
       const res = await obtenerProductosBase();
       setBases(res.data || []);
       setOpenBase(true);
-    } catch (err) {
+    } catch {
       alert('No se pudo cargar el catalogo base');
     }
   };
@@ -499,7 +499,7 @@ export default function Productos() {
       setMensajeTipo('success');
       await cargarProductosYCategorias();
       setOpenBase(false);
-    } catch (_err) {
+    } catch {
       alert('No se pudo completar la carga masiva');
     } finally {
       setUsandoTodasBases(false);
@@ -659,7 +659,6 @@ export default function Productos() {
     }
   }, [
     cargarProductosYCategorias,
-    guardandoMerma,
     handleCerrarMerma,
     mermaCantidad,
     mermaNota,

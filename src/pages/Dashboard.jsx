@@ -23,17 +23,13 @@ export default function Dashboard() {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { selectedLocal } = useAuth();
 
-  const [rangoFechas, setRangoFechas] = useState([]);
+  const [rangoFechas, setRangoFechas] = useState(() => {
+    const hoy = new DateObject();
+    return [hoy, hoy];
+  });
   const [resumen, setResumen] = useState(null);
   const [sinDatosHoy, setSinDatosHoy] = useState(false);
   const [productosVendidosExpandido, setProductosVendidosExpandido] = useState(false);
-
-  useEffect(() => {
-    if (rangoFechas.length === 0) {
-      const hoy = new DateObject();
-      setRangoFechas([hoy, hoy]);
-    }
-  }, []);
 
   useEffect(() => {
     const cargarResumen = async () => {

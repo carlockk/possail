@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Accordion,
   AccordionDetails,
@@ -109,27 +109,34 @@ export default function PedidosWeb() {
   const puedeCrearEstados = ['admin', 'superadmin'].includes(usuario?.rol || '');
   const puedeEliminarPedidos = ['admin', 'superadmin'].includes(usuario?.rol || '');
   const puedeAsignarRepartidor = ['admin', 'superadmin', 'cajero'].includes(usuario?.rol || '');
+  const requestInFlightRef = useRef('');
+  const latestLocalIdRef = useRef(localId);
+  latestLocalIdRef.current = localId;
 
-  const cargarPedidos = async () => {
+  const cargarPedidos = useCallback(async ({ background = false } = {}) => {
     if (!localId) {
       setPedidos([]);
       return;
     }
+    if (background && document.visibilityState === 'hidden') return;
+    if (requestInFlightRef.current === localId) return;
+    requestInFlightRef.current = localId;
 
-    setLoading(true);
+    if (!background) setLoading(true);
     try {
       const res = await obtenerPedidosWeb();
       const data = Array.isArray(res.data) ? res.data : [];
       data.sort((a, b) => getPedidoDate(b) - getPedidoDate(a));
-      setPedidos(data);
+      if (latestLocalIdRef.current === localId) setPedidos(data);
     } catch {
-      setPedidos([]);
+      if (!background && latestLocalIdRef.current === localId) setPedidos([]);
     } finally {
-      setLoading(false);
+      if (requestInFlightRef.current === localId) requestInFlightRef.current = '';
+      if (!background && latestLocalIdRef.current === localId) setLoading(false);
     }
-  };
+  }, [localId]);
 
-  const cargarEstados = async () => {
+  const cargarEstados = useCallback(async () => {
     if (!localId) {
       setEstados(ESTADOS_DEFAULT);
       return;
@@ -141,9 +148,9 @@ export default function PedidosWeb() {
     } catch {
       setEstados(ESTADOS_DEFAULT);
     }
-  };
+  }, [localId]);
 
-  const cargarEstadosRepartidor = async () => {
+  const cargarEstadosRepartidor = useCallback(async () => {
     if (!localId) {
       setEstadosRepartidor([]);
       return;
@@ -155,9 +162,9 @@ export default function PedidosWeb() {
     } catch {
       setEstadosRepartidor([]);
     }
-  };
+  }, [localId]);
 
-  const cargarRepartidores = async () => {
+  const cargarRepartidores = useCallback(async () => {
     if (!localId) {
       setRepartidores([]);
       return;
@@ -168,14 +175,14 @@ export default function PedidosWeb() {
     } catch {
       setRepartidores([]);
     }
-  };
+  }, [localId]);
 
   useEffect(() => {
     cargarPedidos();
     cargarEstados();
     cargarEstadosRepartidor();
     cargarRepartidores();
-  }, [localId]);
+  }, [cargarPedidos, cargarEstados, cargarEstadosRepartidor, cargarRepartidores]);
 
   useEffect(() => {
     const focusId = location.state?.focusPedidoId;
@@ -190,10 +197,10 @@ export default function PedidosWeb() {
   useEffect(() => {
     if (!localId) return undefined;
     const interval = setInterval(() => {
-      cargarPedidos();
+      cargarPedidos({ background: true });
     }, 15000);
     return () => clearInterval(interval);
-  }, [localId]);
+  }, [localId, cargarPedidos]);
 
   const pedidosFiltrados = useMemo(() => {
     if (tab === 'abiertos') {

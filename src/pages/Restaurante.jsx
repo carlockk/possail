@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Box,
@@ -161,7 +161,7 @@ export default function Restaurante() {
     [mesas]
   );
 
-  const cargarDatos = async () => {
+  const cargarDatos = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -184,11 +184,11 @@ export default function Restaurante() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [esAdminOCajero]);
 
   useEffect(() => {
     cargarDatos();
-  }, [selectedLocal?._id]);
+  }, [cargarDatos, selectedLocal?._id]);
 
   const crearMesa = async () => {
     try {

@@ -16,7 +16,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 
 export default function ListaUsuarios() {
-  const { usuario, selectedLocal } = useAuth();
+  const { usuario, modulos, selectedLocal } = useAuth();
   const [usuarios, setUsuarios] = useState([]);
   const [locales, setLocales] = useState([]);
   const [open, setOpen] = useState(false);
@@ -41,7 +41,7 @@ export default function ListaUsuarios() {
     try {
       const res = await obtenerLocales();
       setLocales(res.data || []);
-    } catch (err) {
+    } catch {
       setLocales([]);
     }
   };
@@ -231,8 +231,8 @@ export default function ListaUsuarios() {
           >
             <MenuItem value="admin">Admin</MenuItem>
             <MenuItem value="cajero">Cajero</MenuItem>
-            <MenuItem value="mesero">Mesero</MenuItem>
-            <MenuItem value="repartidor">Repartidor</MenuItem>
+            {(modulos.restaurante || editData.rol === 'mesero') && <MenuItem value="mesero">Mesero</MenuItem>}
+            {(modulos.pedidosWeb || editData.rol === 'repartidor') && <MenuItem value="repartidor">Repartidor</MenuItem>}
           </TextField>
           <TextField
             select
@@ -316,8 +316,8 @@ export default function ListaUsuarios() {
           >
             <MenuItem value="admin">Admin</MenuItem>
             <MenuItem value="cajero">Cajero</MenuItem>
-            <MenuItem value="mesero">Mesero</MenuItem>
-            <MenuItem value="repartidor">Repartidor</MenuItem>
+            {modulos.restaurante && <MenuItem value="mesero">Mesero</MenuItem>}
+            {modulos.pedidosWeb && <MenuItem value="repartidor">Repartidor</MenuItem>}
           </TextField>
           {usuario?.rol === 'superadmin' && (
             <TextField

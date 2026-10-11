@@ -91,7 +91,7 @@ export default function Categorias() {
     try {
       const res = await obtenerCategorias();
       setCategorias(buildCategoryLabelMap(res.data || []));
-    } catch (err) {
+    } catch {
       setError('No se pudieron cargar las categorias.');
     } finally {
       setLoading(false);
@@ -102,7 +102,7 @@ export default function Categorias() {
     try {
       const res = await obtenerLocales();
       setLocales(res.data || []);
-    } catch (err) {
+    } catch {
       setLocales([]);
     }
   };

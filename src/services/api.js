@@ -242,6 +242,8 @@ export const obtenerResumenPorRango = (inicio, fin) =>
 // ─────────────────────────────────────────────
 export const loginUsuario = (data) => API.post('/auth/login', data);
 export const registrarNegocio = (data) => API.post('/auth/register', data);
+export const obtenerModulosNegocio = () => API.get('/auth/modulos');
+export const guardarModulosNegocio = (modulos) => API.put('/auth/modulos', { modulos });
 export const cambiarMiPassword = (data) => API.post('/auth/password', data);
 export const eliminarMiCuenta = (password) => API.delete('/auth/cuenta', { data: { password } });
 export const obtenerResumenPlataforma = () => API.get('/plataforma/resumen');

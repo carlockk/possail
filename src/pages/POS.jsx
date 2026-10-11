@@ -181,7 +181,7 @@ const matchesCategoriaFiltro = (producto, filtroCategoria, lookups) => {
 };
 
 export default function POS() {
-  const { usuario, selectedLocal } = useAuth();
+  const { usuario, modulos, selectedLocal } = useAuth();
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [filtroCategoria, setFiltroCategoria] = useState('');
@@ -234,7 +234,10 @@ export default function POS() {
 
   const categoryLookups = useMemo(() => buildCategoryLookups(categorias), [categorias]);
 
-  const resolverCategoriaId = (producto) => resolveProductoCategoriaId(producto, categoryLookups);
+  const resolverCategoriaId = useCallback(
+    (producto) => resolveProductoCategoriaId(producto, categoryLookups),
+    [categoryLookups]
+  );
 
   const tieneVariantes = (producto) =>
     Array.isArray(producto?.variantes) &&
@@ -271,7 +274,7 @@ export default function POS() {
     return obtenerStockControlado(producto?.stock);
   };
 
-  const ordenarProductosPorCategorias = (prods, cats) => {
+  const ordenarProductosPorCategorias = useCallback((prods, cats) => {
     if (!Array.isArray(cats) || cats.length === 0) {
       return [...prods];
     }
@@ -284,7 +287,7 @@ export default function POS() {
     });
 
     return [...Array.from(grupos.values()).flat(), ...restantes];
-  };
+  }, [resolverCategoriaId]);
 
   const cargarDatos = useCallback(async ({ background = false } = {}) => {
     if (!background) {
@@ -401,7 +404,7 @@ export default function POS() {
       ? producto.agregados.filter((agg) => agg?.nombre && agg?.activo !== false)
       : [];
 
-    if (agregadosActivos.length > 0) {
+    if (modulos.agregados && agregadosActivos.length > 0) {
       setProductoConAgregados({ producto, variante: null });
       return;
     }
@@ -416,7 +419,7 @@ export default function POS() {
       ? productoConVariantes.agregados.filter((agg) => agg?.nombre && agg?.activo !== false)
       : [];
 
-    if (agregadosActivos.length > 0) {
+    if (modulos.agregados && agregadosActivos.length > 0) {
       setProductoConAgregados({ producto: productoConVariantes, variante });
       setProductoConVariantes(null);
       return;
@@ -513,7 +516,7 @@ export default function POS() {
 
   const productosOrdenados = useMemo(
     () => ordenarProductosPorCategorias(productos, categorias),
-    [productos, categorias]
+    [productos, categorias, ordenarProductosPorCategorias]
   );
 
   const productosFiltrados = useMemo(
@@ -600,7 +603,7 @@ export default function POS() {
     });
 
     return grupos;
-  }, [categorias, productosFiltrados]);
+  }, [categorias, productosFiltrados, resolverCategoriaId]);
   useEffect(() => {
     setProductosVisibles(PRODUCTOS_POR_BLOQUE);
   }, [busquedaLower, filtroCategoria, selectedLocal?._id]);
@@ -1355,13 +1358,13 @@ export default function POS() {
         onClose={() => setProductoConVariantes(null)}
         onSelect={handleSeleccionVariante}
       />
-      <SelectorAgregadosDialog
+      {modulos.agregados && <SelectorAgregadosDialog
         open={Boolean(productoConAgregados)}
         producto={productoConAgregados?.producto}
         variante={productoConAgregados?.variante}
         onClose={() => setProductoConAgregados(null)}
         onConfirm={handleConfirmarAgregados}
-      />
+      />}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={2000}

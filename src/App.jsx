@@ -48,7 +48,7 @@ const drawerWidth = 280;
 const collapsedDrawerWidth = 72;
 
 export default function App() {
-  const { usuario } = useAuth();
+  const { usuario, modulos } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -64,7 +64,8 @@ export default function App() {
   const esMesero = usuario?.rol === 'mesero';
   const esAdmin = usuario?.rol === 'admin' || usuario?.rol === 'superadmin';
   const usuarioGeneral = Boolean(usuario) && !esMesero && !isPlatformAdmin;
-  const rutaInicio = isPlatformAdmin ? '/plataforma' : esMesero ? '/restaurante' : '/';
+  const rutaInicio = isPlatformAdmin ? '/plataforma' : esMesero && modulos.restaurante ? '/restaurante' : '/';
+  const moduloDesactivado = <Box sx={{ p: 4 }}><Typography variant="h6">Módulo desactivado</Typography><Typography>Contacta al propietario del negocio para activarlo.</Typography></Box>;
 
   const toggleDrawer = () => setMobileOpen(!mobileOpen);
   const activeDrawerWidth = !isMobile && sidebarCollapsed ? collapsedDrawerWidth : drawerWidth;
@@ -140,8 +141,8 @@ export default function App() {
 
         {ENABLE_BACKGROUND_WATCHERS && backgroundFeaturesReady && !esMesero && !isPlatformAdmin && (
           <Suspense fallback={null}>
-            <PedidosWebWatcher />
-            <RestauranteCobroWatcher />
+            {modulos.pedidosWeb && <PedidosWebWatcher />}
+            {modulos.restaurante && <RestauranteCobroWatcher />}
           </Suspense>
         )}
 
@@ -210,20 +211,20 @@ export default function App() {
             <Route path="/ticket" element={usuarioGeneral ? <Ticket /> : <Navigate to={rutaInicio} />} />
             <Route path="/ticket-caja" element={usuarioGeneral ? <TicketCaja /> : <Navigate to={rutaInicio} />} />
             <Route path="/tickets-abiertos" element={usuarioGeneral ? <TicketsAbiertos /> : <Navigate to={rutaInicio} />} />
-            <Route path="/pedidos-web" element={usuarioGeneral ? <PedidosWeb /> : <Navigate to={rutaInicio} />} />
-            <Route path="/restaurante" element={usuario ? <Restaurante /> : <Navigate to="/login" />} />
+            <Route path="/pedidos-web" element={usuarioGeneral ? (modulos.pedidosWeb ? <PedidosWeb /> : moduloDesactivado) : <Navigate to={usuario ? rutaInicio : '/login'} />} />
+            <Route path="/restaurante" element={usuario && !isPlatformAdmin ? (modulos.restaurante ? <Restaurante /> : moduloDesactivado) : <Navigate to={usuario ? rutaInicio : '/login'} />} />
             <Route path="/locales" element={usuarioGeneral ? <Locales /> : <Navigate to={rutaInicio} />} />
             <Route path="/cuenta" element={usuario?.rol === 'superadmin' ? <Cuenta /> : <Navigate to={rutaInicio} />} />
             <Route path="/insumos" element={usuarioGeneral ? <Insumos /> : <Navigate to={rutaInicio} />} />
-            <Route path="/agregados" element={usuarioGeneral ? <Agregados /> : <Navigate to={rutaInicio} />} />
+            <Route path="/agregados" element={usuarioGeneral ? (modulos.agregados ? <Agregados /> : moduloDesactivado) : <Navigate to={usuario ? rutaInicio : '/login'} />} />
             <Route path="/descuentos" element={esAdmin ? <Descuentos /> : <Navigate to={rutaInicio} />} />
             <Route
               path="/social"
-              element={esAdmin ? <SocialConfig /> : <Navigate to={rutaInicio} />}
+              element={esAdmin ? (modulos.pedidosWeb ? <SocialConfig /> : moduloDesactivado) : <Navigate to={usuario ? rutaInicio : '/login'} />}
             />
             <Route
               path="/horario-tienda"
-              element={esAdmin ? <HorarioTienda /> : <Navigate to={rutaInicio} />}
+              element={esAdmin ? (modulos.pedidosWeb ? <HorarioTienda /> : moduloDesactivado) : <Navigate to={usuario ? rutaInicio : '/login'} />}
             />
             <Route
               path="/config-recibo"

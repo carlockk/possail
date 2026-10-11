@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Box,
@@ -125,7 +125,7 @@ export default function DeliveryZonesEditor({
     return { lat: -33.4489, lng: -70.6693 };
   }, [selectedZone]);
 
-  const syncMapShape = () => {
+  const syncMapShape = useCallback(() => {
     if (!window.google?.maps || !mapRef.current) return;
 
     if (polygonRef.current) {
@@ -199,7 +199,7 @@ export default function DeliveryZonesEditor({
         mapRef.current.setZoom(15);
       }
     }
-  };
+  }, [selectedZone, selectedIndex]);
 
   useEffect(() => {
     if (!open || !mapsReady || !mapContainerRef.current || !window.google?.maps) return;
@@ -243,11 +243,7 @@ export default function DeliveryZonesEditor({
         clickListenerRef.current = null;
       }
     };
-  }, [open, mapsReady, currentCenter, selectedZone, selectedIndex]);
-
-  useEffect(() => {
-    syncMapShape();
-  }, [selectedZone]);
+  }, [open, mapsReady, currentCenter, selectedZone, selectedIndex, syncMapShape]);
 
   const updateSelectedZone = (patch) => {
     if (selectedIndex < 0) return;

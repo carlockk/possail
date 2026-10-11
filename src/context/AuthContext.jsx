@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { SESSION_EXPIRED_EVENT } from '../services/api';
+import { createContext, useCallback, useContext, useState, useEffect, useMemo } from 'react';
+import { SESSION_EXPIRED_EVENT, obtenerModulosNegocio } from '../services/api';
+import { getModules } from '../lib/modules';
 
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
@@ -52,6 +53,15 @@ export function AuthProvider({ children }) {
   const [usuario, setUsuario] = useState(initialSession.usuario);
   const [selectedLocal, setSelectedLocal] = useState(initialSession.selectedLocal);
   const [sessionDeadline, setSessionDeadline] = useState(initialSession.sessionDeadline);
+  const actualizarModulos = useCallback((modulos) => {
+    setUsuario((current) => {
+      if (!current) return current;
+      const updated = { ...current, modulos: getModules(modulos) };
+      localStorage.setItem('usuario', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+  const modulos = useMemo(() => getModules(usuario?.modulos), [usuario?.modulos]);
 
   const login = (data) => {
     setUsuario(data);
@@ -101,8 +111,17 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
   }, []);
 
+  useEffect(() => {
+    if (!usuario?.token || usuario.rol === 'platform_admin') return undefined;
+    let cancelled = false;
+    obtenerModulosNegocio()
+      .then((response) => { if (!cancelled) actualizarModulos(response.data.modulos); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [usuario?.token, usuario?.rol, actualizarModulos]);
+
   return (
-    <AuthContext.Provider value={{ usuario, login, logout, selectedLocal, seleccionarLocal }}>
+    <AuthContext.Provider value={{ usuario, modulos, actualizarModulos, login, logout, selectedLocal, seleccionarLocal }}>
       {children}
     </AuthContext.Provider>
   );

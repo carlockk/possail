@@ -92,7 +92,7 @@ export default function PedidosWebWatcher() {
 
       requestInFlightRef.current = true;
       try {
-        const res = await obtenerPedidosWeb();
+        const res = await obtenerPedidosWeb({ abiertos: true });
         const pedidos = Array.isArray(res.data) ? res.data : [];
         const abiertos = pedidos
           .filter((p) => !CERRADOS.has(getEstado(p)))

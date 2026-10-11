@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { Alert, Box, Button, CircularProgress, IconButton, Paper, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, FormControlLabel, IconButton, Paper, Stack, Switch, TextField, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { Link, useNavigate } from 'react-router-dom';
 import { registrarNegocio } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import logo from '../possail.png';
+import { MODULES } from '../lib/modules';
 
 export default function Register() {
-  const [form, setForm] = useState({ negocio: '', nombre: '', email: '', password: '' });
+  const [form, setForm] = useState({ negocio: '', nombre: '', email: '', password: '', modulos: { agregados: false, restaurante: false, pedidosWeb: false } });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -71,6 +72,19 @@ export default function Register() {
           <TextField name="nombre" label="Tu nombre" value={form.nombre} onChange={change} required inputProps={{ maxLength: 80 }} />
           <TextField name="email" label="Correo electrónico" type="email" value={form.email} onChange={change} required autoComplete="email" />
           <TextField name="password" label="Contraseña" type="password" value={form.password} onChange={change} required inputProps={{ minLength: 12 }} helperText="Mínimo 12 caracteres" autoComplete="new-password" />
+          <Box>
+            <Typography variant="subtitle1" fontWeight={700}>Módulos opcionales</Typography>
+            <Typography variant="body2" sx={{ color: '#cbd5e1', mb: 1 }}>Puedes activarlos ahora o más adelante en Mi cuenta.</Typography>
+            {MODULES.map(({ key, label, description }) => (
+              <Box key={key} sx={{ py: 0.75 }}>
+                <FormControlLabel
+                  control={<Switch checked={form.modulos[key]} onChange={(event) => setForm((current) => ({ ...current, modulos: { ...current.modulos, [key]: event.target.checked } }))} />}
+                  label={label}
+                />
+                <Typography variant="body2" sx={{ color: '#cbd5e1', pl: 6 }}>{description}</Typography>
+              </Box>
+            ))}
+          </Box>
           <Button type="submit" variant="contained" size="large" disabled={loading} sx={{ py: 1.4, textTransform: 'none', fontWeight: 600, background: 'linear-gradient(135deg, #1d4ed8, #2563eb)' }}>
             {loading ? <CircularProgress size={22} color="inherit" /> : 'Crear cuenta'}
           </Button>

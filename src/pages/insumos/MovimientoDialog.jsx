@@ -11,7 +11,7 @@ import {
   TextField,
   Typography
 } from '@mui/material';
-import { obtenerMovimientosInsumo, registrarMovimientoInsumo } from '../../services/api';
+import { registrarMovimientoInsumo } from '../../services/api';
 
 const buildEmptyForm = (tipo) => ({
   tipo: tipo || 'entrada',
@@ -27,8 +27,7 @@ export default function MovimientoDialog({
   tipoInicial,
   onInfo,
   onError,
-  onRefreshInsumos,
-  onUpdateMovimientos
+  onRefreshInsumos
 }) {
   const [form, setForm] = useState(buildEmptyForm('entrada'));
   const [saving, setSaving] = useState(false);
@@ -73,8 +72,6 @@ export default function MovimientoDialog({
       onInfo?.('Movimiento registrado.');
       setForm(buildEmptyForm(tipoFijo ? (tipoInicial || 'entrada') : 'entrada'));
       onRefreshInsumos?.();
-      const res = await obtenerMovimientosInsumo(insumo._id);
-      onUpdateMovimientos?.(res.data || []);
     } catch (err) {
       onError?.(err?.response?.data?.error || 'No se pudo registrar el movimiento.');
     } finally {

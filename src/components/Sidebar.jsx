@@ -47,6 +47,8 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import LanguageIcon from '@mui/icons-material/Language';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import DiscountOutlinedIcon from '@mui/icons-material/DiscountOutlined';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import RestaurantIcon from '@mui/icons-material/Restaurant';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
@@ -67,7 +69,7 @@ export default function Sidebar({
   onToggleCollapsed,
   drawerWidth = expandedDrawerWidth
 }) {
-  const { usuario, logout, selectedLocal, seleccionarLocal } = useAuth();
+  const { usuario, modulos, logout, selectedLocal, seleccionarLocal } = useAuth();
   const theme = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
@@ -79,6 +81,7 @@ export default function Sidebar({
   const [openMenus, setOpenMenus] = useState({
     caja: false,
     usuarios: false,
+    pedidosWeb: false,
   });
   const [locales, setLocales] = useState([]);
   const [localesLoading, setLocalesLoading] = useState(false);
@@ -89,6 +92,7 @@ export default function Sidebar({
   const [logoWebSaving, setLogoWebSaving] = useState(false);
   const [logoWebError, setLogoWebError] = useState('');
   const drawerContentRef = useRef(null);
+  const previousPathRef = useRef(location.pathname);
 
   useEffect(() => {
     const saved = localStorage.getItem('sidebarMenus');
@@ -97,6 +101,7 @@ export default function Sidebar({
       setOpenMenus({
         caja: Boolean(parsed.caja),
         usuarios: Boolean(parsed.usuarios),
+        pedidosWeb: Boolean(parsed.pedidosWeb),
       });
     }
   }, []);
@@ -106,10 +111,12 @@ export default function Sidebar({
   }, [openMenus]);
 
   useEffect(() => {
-    if (isMobile && toggleDrawer) {
+    if (previousPathRef.current === location.pathname) return;
+    previousPathRef.current = location.pathname;
+    if (isMobile && mobileOpen && toggleDrawer) {
       toggleDrawer();
     }
-  }, [location]);
+  }, [location.pathname, isMobile, mobileOpen, toggleDrawer]);
 
   useEffect(() => {
     const root = drawerContentRef.current;
@@ -262,7 +269,7 @@ export default function Sidebar({
         objectFit: 'contain'
       }}
     />
-    {(usuario?.rol === 'admin' || usuario?.rol === 'superadmin') && !isMobile && !collapsed && (
+    {modulos.pedidosWeb && (usuario?.rol === 'admin' || usuario?.rol === 'superadmin') && !isMobile && !collapsed && (
       <Tooltip title="Cambiar logo web cliente">
         <IconButton
           size="small"
@@ -289,7 +296,7 @@ export default function Sidebar({
       📍 {usuario.local.nombre}
     </Typography>
   )}
-  {(usuario?.rol === 'admin' || usuario?.rol === 'superadmin') && isMobile && (
+  {modulos.pedidosWeb && (usuario?.rol === 'admin' || usuario?.rol === 'superadmin') && isMobile && (
     <Typography
       variant="caption"
       onClick={abrirDialogLogoWeb}
@@ -375,7 +382,7 @@ export default function Sidebar({
           }
         }}
       >
-        {esMesero ? null : (
+        {esMesero ? (modulos.restaurante && <ListItem disablePadding><ListItemButton component={Link} to="/restaurante" sx={{ px: 3, py: 1.5, color: '#d1d5db' }}><Box sx={{ mr: 2 }}><RestaurantIcon /></Box><ListItemText primary="Restaurante" /></ListItemButton></ListItem>) : (
           <>
         <ListItem disablePadding>
           <ListItemButton component={Link} to="/dashboard" sx={{ px: 3, py: 1.5, color: '#d1d5db' }}>
@@ -401,6 +408,8 @@ export default function Sidebar({
             </ListItemButton>
           </ListItem>
         )}
+
+        {modulos.agregados && <ListItem disablePadding><ListItemButton component={Link} to="/agregados" sx={{ px: 3, py: 1.5, color: '#d1d5db' }}><Box sx={{ mr: 2 }}><AddCircleOutlineIcon /></Box><ListItemText primary="Agregados" /></ListItemButton></ListItem>}
 
         {/* Categorias */}
         {(usuario?.rol === 'admin' || usuario?.rol === 'superadmin') && (
@@ -433,14 +442,6 @@ export default function Sidebar({
         )}
 
 
-        {(usuario?.rol === 'admin' || usuario?.rol === 'superadmin') && (
-          <ListItem disablePadding>
-            <ListItemButton component={Link} to="/horario-tienda" sx={{ px: 3, py: 1.5, color: '#d1d5db' }}>
-              <Box sx={{ mr: 2 }}><AccessTimeIcon /></Box>
-              <ListItemText primary="Horario de la tienda" />
-            </ListItemButton>
-          </ListItem>
-        )}
         {/* POS */}
         {(usuario?.rol === 'admin' || usuario?.rol === 'superadmin') && (
           <ListItem disablePadding>
@@ -456,6 +457,7 @@ export default function Sidebar({
             <ListItemText primary="POS" />
           </ListItemButton>
         </ListItem>
+        {modulos.restaurante && <ListItem disablePadding><ListItemButton component={Link} to="/restaurante" sx={{ px: 3, py: 1.5, color: '#d1d5db' }}><Box sx={{ mr: 2 }}><RestaurantIcon /></Box><ListItemText primary="Restaurante" /></ListItemButton></ListItem>}
 
         {/* Historial */}
         <ListItem disablePadding>
@@ -483,13 +485,24 @@ export default function Sidebar({
 </ListItem>
 
         {/* pedidos web */}
-        {(usuario?.rol === 'admin' || usuario?.rol === 'superadmin' || usuario?.rol === 'cajero') && (
-          <ListItem disablePadding>
-            <ListItemButton component={Link} to="/pedidos-web" sx={{ px: 3, py: 1.5, color: '#d1d5db' }}>
-              <Box sx={{ mr: 2 }}><LanguageIcon /></Box>
-              <ListItemText primary="Pedidos Web" />
+        {modulos.pedidosWeb && (usuario?.rol === 'admin' || usuario?.rol === 'superadmin' || usuario?.rol === 'cajero') && (
+          <>
+            <ListItemButton onClick={() => toggleMenu('pedidosWeb')} sx={{ px: 3, py: 1.5, color: '#d1d5db' }}>
+              <Box sx={{ mr: 2 }}><LanguageIcon /></Box><ListItemText primary="Pedidos Web" />
+              {openMenus.pedidosWeb ? <ExpandLess /> : <ExpandMore />}
             </ListItemButton>
-          </ListItem>
+            <Collapse in={openMenus.pedidosWeb} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding>
+                <ListItemButton component={Link} to="/pedidos-web" sx={{ pl: 5, py: 1, color: '#d1d5db' }}><ListItemText primary="Pedidos" /></ListItemButton>
+                {(usuario?.rol === 'admin' || usuario?.rol === 'superadmin') && (
+                  <>
+                    <ListItemButton component={Link} to="/horario-tienda" sx={{ pl: 5, py: 1, color: '#d1d5db' }}><Box sx={{ mr: 1 }}><AccessTimeIcon fontSize="small" /></Box><ListItemText primary="Horario de la tienda" /></ListItemButton>
+                    <ListItemButton component={Link} to="/social" sx={{ pl: 5, py: 1, color: '#d1d5db' }}><ListItemText primary="Configuración web" /></ListItemButton>
+                  </>
+                )}
+              </List>
+            </Collapse>
+          </>
         )}
 
         {/* Solo admin */}

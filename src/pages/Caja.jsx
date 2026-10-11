@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Box,
   Typography,
@@ -35,7 +35,7 @@ export default function Caja() {
   const { cajaAbierta, setCajaAbierta } = useCaja();
   const superadminSinLocal = usuario?.rol === 'superadmin' && !selectedLocal?._id;
 
-  const cargarPendientes = async () => {
+  const cargarPendientes = useCallback(async () => {
     if (!cajaAbierta || superadminSinLocal) {
       setPendientes([]);
       setRendicionesPendientes([]);
@@ -49,17 +49,17 @@ export default function Caja() {
       ]);
       setPendientes(resPendientes.data || []);
       setRendicionesPendientes(resRendiciones.data || []);
-    } catch (err) {
+    } catch {
       setPendientes([]);
       setRendicionesPendientes([]);
     } finally {
       setCargandoPendientes(false);
     }
-  };
+  }, [cajaAbierta, superadminSinLocal]);
 
   useEffect(() => {
     cargarPendientes();
-  }, [cajaAbierta, superadminSinLocal, selectedLocal?._id]);
+  }, [cargarPendientes, selectedLocal?._id]);
 
   const handleAbrir = async () => {
     if (superadminSinLocal) {

@@ -199,7 +199,7 @@ export default function Agregados() {
       setAgregados(agregadosRes.data || []);
       setCategorias(categoriasRes.data || []);
       setProductos(productosRes.data || []);
-    } catch (err) {
+    } catch {
       setError('No se pudo cargar agregados.');
     }
   };
@@ -213,7 +213,7 @@ export default function Agregados() {
     } else {
       setLocales([]);
     }
-  }, [selectedLocal?._id]);
+  }, [selectedLocal?._id, usuario?.rol]);
 
   useEffect(() => {
     if (!cloneLocal) {

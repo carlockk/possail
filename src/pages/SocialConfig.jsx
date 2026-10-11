@@ -70,7 +70,7 @@ export default function SocialConfig() {
         });
 
         setSocials(next);
-      } catch (err) {
+      } catch {
         setError('No se pudo cargar la configuracion social.');
       } finally {
         setLoading(false);

@@ -52,7 +52,7 @@ export default function ConfigRecibo() {
           tipo_pago: 'efectivo',
           tipo_pedido: '—'
         });
-      } catch (err) {
+      } catch {
         setError('No se pudo cargar la configuracion.');
       } finally {
         setLoading(false);
@@ -68,11 +68,10 @@ export default function ConfigRecibo() {
   }, [logoFile, form.logo_url, form.remove_logo]);
 
   useEffect(() => {
-    if (!previewVenta) return;
-    setPreviewVenta((prev) => ({
+    setPreviewVenta((prev) => prev ? {
       ...prev,
       fecha: new Date().toISOString()
-    }));
+    } : prev);
   }, [form.nombre, form.pie, form.copias_auto, previewLogo]);
 
   const handleSave = async () => {

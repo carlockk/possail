@@ -24,7 +24,7 @@ export default function TicketsAbiertos() {
       const data = Array.isArray(res.data) ? res.data : [];
       const soloPOS = data.filter((ticket) => !String(ticket?.nombre || '').startsWith('WEB #'));
       setTickets(soloPOS);
-    } catch (err) {
+    } catch {
       alert('❌ Error al cargar tickets');
     }
   };
