@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import EmailIcon from '@mui/icons-material/EmailOutlined';
 import LockIcon from '@mui/icons-material/LockOutlined';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { loginUsuario } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -139,6 +140,28 @@ export default function Login({ platform = false }) {
             {date}
           </Typography>
         </Box>
+        {!platform && <Button
+          type="button"
+          onClick={() => setPlanesOpen(true)}
+          endIcon={<ChevronRightIcon />}
+          aria-label="Ver planes disponibles"
+          sx={{
+            position: 'absolute', top: '55%', left: 0, zIndex: 1,
+            width: 142, height: 58, px: 2, justifyContent: 'space-between',
+            borderRadius: '0 30px 30px 0', textTransform: 'none',
+            fontSize: 15, fontWeight: 800, color: '#fff',
+            background: 'linear-gradient(110deg, #1d4ed8, #2563eb)',
+            boxShadow: '4px 8px 24px rgba(0, 0, 0, 0.38)',
+            transition: 'width 220ms ease, box-shadow 220ms ease, background 220ms ease',
+            '&:hover, &:focus-visible': {
+              width: 180,
+              background: 'linear-gradient(110deg, #2563eb, #3b82f6)',
+              boxShadow: '8px 10px 28px rgba(0, 0, 0, 0.48)',
+            },
+            '&:focus-visible': { outline: '2px solid #fff', outlineOffset: 3 },
+            '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
+          }}
+        >Ver planes</Button>}
       </Box>
 
       {/* Panel derecho */}
