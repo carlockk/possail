@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Alert, Box, Button, CircularProgress, FormControlLabel, IconButton, Paper, Stack, Switch, TextField, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { obtenerPlanesPublicos, registrarNegocio } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import logo from '../possail.png';
@@ -11,13 +11,15 @@ export default function Register() {
   const [form, setForm] = useState({ negocio: '', nombre: '', email: '', password: '', modulos: { agregados: false, restaurante: false, pedidosWeb: false } });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [inicio, setInicio] = useState(null);
+  const [planes, setPlanes] = useState(null);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedPlan = searchParams.get('plan') === 'pro' ? 'pro' : 'inicio';
 
   useEffect(() => {
     let cancelled = false;
-    obtenerPlanesPublicos().then((response) => { if (!cancelled) setInicio(response.data.inicio); }).catch(() => {});
+    obtenerPlanesPublicos().then((response) => { if (!cancelled) setPlanes(response.data); }).catch(() => {});
     return () => { cancelled = true; };
   }, []);
 
@@ -28,7 +30,7 @@ export default function Register() {
     setError('');
     setLoading(true);
     try {
-      const response = await registrarNegocio(form);
+      const response = await registrarNegocio({ ...form, plan: selectedPlan });
       login(response.data);
       navigate('/locales');
     } catch (err) {
@@ -74,7 +76,12 @@ export default function Register() {
           <Typography variant="body2" sx={{ color: '#cbd5e1' }}>
             Tendrás acceso a productos, locales, ventas y usuarios en un espacio propio.
           </Typography>
-          {inicio && <Alert severity="info">Tu cuenta comenzará en el plan {inicio.nombre}: {inicio.maxLocales} local, 1 propietario, {inicio.cuposPorRol.admin} admin, {inicio.cuposPorRol.cajero} cajeros, {inicio.cuposPorRol.mesero} meseros y {inicio.cuposPorRol.repartidor} repartidor. Precio de referencia: ${Number(inicio.precioMensual).toLocaleString('es-CL')}/mes. El cobro automático aún no está habilitado.</Alert>}
+          <Stack direction="row" spacing={1}>
+            {['inicio', 'pro'].map((key) => <Button key={key} variant={selectedPlan === key ? 'contained' : 'outlined'} onClick={() => setSearchParams({ plan: key })} sx={{ flex: 1, textTransform: 'none' }}>
+              {planes?.[key]?.nombre || (key === 'inicio' ? 'Inicio' : 'Pro')}
+            </Button>)}
+          </Stack>
+          {planes?.[selectedPlan] && <Alert severity="info">Tu cuenta comenzará en el plan {planes[selectedPlan].nombre}: {planes[selectedPlan].maxLocales} {planes[selectedPlan].maxLocales === 1 ? 'local' : 'locales'}, 1 propietario, {planes[selectedPlan].cuposPorRol.admin} admins, {planes[selectedPlan].cuposPorRol.cajero} cajeros, {planes[selectedPlan].cuposPorRol.mesero} meseros y {planes[selectedPlan].cuposPorRol.repartidor} repartidores. Precio de referencia: ${Number(planes[selectedPlan].precioMensual).toLocaleString('es-CL')}/mes. El plan se activará temporalmente sin cobro; los pagos en línea aún no están habilitados.</Alert>}
           {error && <Alert severity="error">{error}</Alert>}
           <TextField name="negocio" label="Nombre del negocio" value={form.negocio} onChange={change} required inputProps={{ maxLength: 100 }} />
           <TextField name="nombre" label="Tu nombre" value={form.nombre} onChange={change} required inputProps={{ maxLength: 80 }} />

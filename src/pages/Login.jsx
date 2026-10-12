@@ -19,12 +19,14 @@ import { useNavigate } from 'react-router-dom';
 import { Link as RouterLink } from 'react-router-dom';
 import logo from '../possail.png';
 import posBackground from '../assets/POS.jpg';
+import PlanesPublicos from '../components/PlanesPublicos';
 
 export default function Login({ platform = false }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [planesOpen, setPlanesOpen] = useState(false);
   const [now, setNow] = useState(() => new Date());
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -325,6 +327,10 @@ export default function Login({ platform = false }) {
                   <Link component={RouterLink} to="/registro" sx={{ color: '#60a5fa' }}>Crear cuenta</Link>
                 </Typography>
                 <Typography variant="body2" sx={{ color: '#cbd5e1', mb: 1 }}>
+                  ¿Quieres conocer las opciones?{' '}
+                  <Link component="button" type="button" onClick={() => setPlanesOpen(true)} sx={{ color: '#60a5fa' }}>Ver planes</Link>
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#cbd5e1', mb: 1 }}>
                   <Link component={RouterLink} to="/plataforma/login" sx={{ color: '#60a5fa' }}>Plataforma</Link>
                   {' · '}Acceso del administrador global
                 </Typography>
@@ -351,6 +357,7 @@ export default function Login({ platform = false }) {
           </Box>
         </Paper>
       </Box>
+      {!platform && <PlanesPublicos open={planesOpen} onClose={() => setPlanesOpen(false)} />}
     </Box>
   );
 }
