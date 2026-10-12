@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Box, Button, CircularProgress, FormControlLabel, IconButton, Paper, Stack, Switch, TextField, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { Link, useNavigate } from 'react-router-dom';
-import { registrarNegocio } from '../services/api';
+import { obtenerPlanesPublicos, registrarNegocio } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import logo from '../possail.png';
 import { MODULES } from '../lib/modules';
@@ -11,8 +11,15 @@ export default function Register() {
   const [form, setForm] = useState({ negocio: '', nombre: '', email: '', password: '', modulos: { agregados: false, restaurante: false, pedidosWeb: false } });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [inicio, setInicio] = useState(null);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let cancelled = false;
+    obtenerPlanesPublicos().then((response) => { if (!cancelled) setInicio(response.data.inicio); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   const change = (event) => setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
   const submit = async (event) => {
@@ -67,6 +74,7 @@ export default function Register() {
           <Typography variant="body2" sx={{ color: '#cbd5e1' }}>
             Tendrás acceso a productos, locales, ventas y usuarios en un espacio propio.
           </Typography>
+          {inicio && <Alert severity="info">Tu cuenta comenzará en el plan {inicio.nombre}: {inicio.maxLocales} local, 1 propietario, {inicio.cuposPorRol.admin} admin, {inicio.cuposPorRol.cajero} cajeros, {inicio.cuposPorRol.mesero} meseros y {inicio.cuposPorRol.repartidor} repartidor. Precio de referencia: ${Number(inicio.precioMensual).toLocaleString('es-CL')}/mes. El cobro automático aún no está habilitado.</Alert>}
           {error && <Alert severity="error">{error}</Alert>}
           <TextField name="negocio" label="Nombre del negocio" value={form.negocio} onChange={change} required inputProps={{ maxLength: 100 }} />
           <TextField name="nombre" label="Tu nombre" value={form.nombre} onChange={change} required inputProps={{ maxLength: 80 }} />

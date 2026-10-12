@@ -5,7 +5,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { eliminarMiCuenta, guardarModulosNegocio, obtenerModulosNegocio } from '../services/api';
+import { eliminarMiCuenta, guardarModulosNegocio, obtenerModulosNegocio, obtenerMiPlan } from '../services/api';
 import { getModules, MODULES } from '../lib/modules';
 
 export default function Cuenta() {
@@ -19,6 +19,7 @@ export default function Cuenta() {
   const [moduleError, setModuleError] = useState('');
   const [moduleSuccess, setModuleSuccess] = useState('');
   const [savingModules, setSavingModules] = useState(false);
+  const [planInfo, setPlanInfo] = useState(null);
 
   useEffect(() => setSelectedModules(getModules(modulos)), [modulos]);
 
@@ -32,6 +33,12 @@ export default function Cuenta() {
     }).catch(() => { if (!cancelled) setModuleError('No se pudo cargar la configuración de módulos.'); });
     return () => { cancelled = true; };
   }, [actualizarModulos]);
+
+  useEffect(() => {
+    let cancelled = false;
+    obtenerMiPlan().then((response) => { if (!cancelled) setPlanInfo(response.data); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   const saveModules = async () => {
     setSavingModules(true);
@@ -77,6 +84,17 @@ export default function Cuenta() {
       <Typography color="text.secondary" sx={{ mb: 3 }}>
         Administra la cuenta de {usuario?.negocio || 'tu negocio'}.
       </Typography>
+      {planInfo && <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, mb: 3 }}>
+        <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>Plan {planInfo.nombre}</Typography>
+        <Typography color="text.secondary">
+          {planInfo.maxLocales === null ? `${planInfo.locales} locales` : `${planInfo.locales} de ${planInfo.maxLocales} locales`} · {planInfo.maxUsuarios === null ? `${planInfo.usuarios} usuarios` : `${planInfo.usuarios} de ${planInfo.maxUsuarios} usuarios`}
+        </Typography>
+        {planInfo.cuposPorRol && <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          Incluye 1 propietario. En uso: {planInfo.usuariosPorRol?.admin || 0}/{planInfo.cuposPorRol.admin} admins · {planInfo.usuariosPorRol?.cajero || 0}/{planInfo.cuposPorRol.cajero} cajeros · {planInfo.usuariosPorRol?.mesero || 0}/{planInfo.cuposPorRol.mesero} meseros · {planInfo.usuariosPorRol?.repartidor || 0}/{planInfo.cuposPorRol.repartidor} repartidores.
+        </Typography>}
+        {planInfo.plan !== 'gratis' && <Typography sx={{ mt: 1 }}>Precio del plan: ${Number(planInfo.precioMensual).toLocaleString('es-CL')} al mes{planInfo.billingStatus === 'no_configurado' ? ' · cobro automático aún no configurado' : ''}</Typography>}
+        {planInfo.plan !== 'gratis' && <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>Para ampliar un cupo, solicita al administrador de la plataforma un usuario extra: ${Number(planInfo.precioUsuarioExtra?.general || 0).toLocaleString('es-CL')}/mes por admin, cajero o mesero; ${Number(planInfo.precioUsuarioExtra?.repartidor || 0).toLocaleString('es-CL')}/mes por repartidor. La asignación y el cobro se gestionan manualmente por ahora.</Typography>}
+      </Paper>}
       <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, mb: 3 }}>
         <Stack spacing={2}>
           <Typography variant="h6" fontWeight={700}>Módulos del negocio</Typography>

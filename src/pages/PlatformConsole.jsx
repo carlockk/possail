@@ -3,7 +3,7 @@ import {
   Alert, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent,
   DialogTitle, Divider, Drawer, IconButton, List, ListItemButton, ListItemIcon,
   ListItemText, Paper, Stack, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, TextField, Typography, useMediaQuery
+  TableHead, TableRow, TextField, Typography, MenuItem, useMediaQuery
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
@@ -20,7 +20,7 @@ import { useAuth } from '../context/AuthContext';
 import { useThemeMode } from '../context/ThemeContext';
 import {
   cambiarEstadoNegocio, cambiarMiPassword, obtenerNegocioPlataforma, obtenerResumenPlataforma,
-  obtenerUsuariosPlataforma
+  obtenerUsuariosPlataforma, obtenerPlanesPlataforma, guardarPlanesPlataforma, asignarPlanNegocio
 } from '../services/api';
 import logo from '../possail.png';
 
@@ -41,6 +41,8 @@ const descriptions = {
 };
 const dateLabel = (value) => value ? new Date(value).toLocaleDateString('es-CL') : '—';
 const billingLabel = (value) => value === 'no_configurado' || !value ? 'Sin configurar' : value;
+const staffRoles = [['admin', 'Admins'], ['cajero', 'Cajeros'], ['mesero', 'Meseros'], ['repartidor', 'Repartidores']];
+const emptyExtras = { admin: 0, cajero: 0, mesero: 0, repartidor: 0 };
 
 export default function PlatformConsole() {
   const { usuario, logout } = useAuth();
@@ -68,6 +70,10 @@ export default function PlatformConsole() {
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmation: '' });
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [passwordError, setPasswordError] = useState('');
+  const [planDraft, setPlanDraft] = useState(null);
+  const [planSaving, setPlanSaving] = useState(false);
+  const [planNotice, setPlanNotice] = useState('');
+  const [assignment, setAssignment] = useState({ plan: 'inicio', localesAdicionales: 0, usuariosExtra: { ...emptyExtras } });
 
   const submitPassword = async (event) => {
     event.preventDefault();
@@ -114,8 +120,18 @@ export default function PlatformConsole() {
     }
   }, [usersPage]);
 
+  const refreshPlans = useCallback(async () => {
+    try {
+      const response = await obtenerPlanesPlataforma();
+      setPlanDraft(response.data);
+    } catch (err) {
+      setError(err?.response?.data?.error || 'No se pudieron cargar los planes');
+    }
+  }, []);
+
   useEffect(() => { refreshSummary(); }, [refreshSummary]);
   useEffect(() => { if (section === 'usuarios') refreshUsers(); }, [section, refreshUsers]);
+  useEffect(() => { if (section === 'planes') refreshPlans(); }, [section, refreshPlans]);
 
   const negocios = useMemo(() => (data?.negocios || []).filter((item) => {
     const search = query.trim().toLowerCase();
@@ -139,6 +155,7 @@ export default function PlatformConsole() {
     try {
       const response = await obtenerNegocioPlataforma(id);
       setDetail(response.data);
+      setAssignment({ plan: response.data.plan || 'gratis', localesAdicionales: response.data.localesAdicionales || 0, usuariosExtra: { ...emptyExtras, ...response.data.usuariosExtra } });
       setError('');
     } catch (err) {
       setError(err?.response?.data?.error || 'No se pudo cargar el negocio');
@@ -157,6 +174,48 @@ export default function PlatformConsole() {
       if (section === 'usuarios') await refreshUsers();
     } catch (err) {
       setError(err?.response?.data?.error || 'No se pudo actualizar el negocio');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const updatePlanField = (sectionKey, field, value) => {
+    setPlanDraft((current) => ({ ...current, [sectionKey]: { ...current[sectionKey], [field]: field === 'nombre' ? value : Number(value) } }));
+    setPlanNotice('');
+  };
+  const updateRoleQuota = (tier, role, value) => {
+    setPlanDraft((current) => ({ ...current, [tier]: {
+      ...current[tier], cuposPorRol: { ...current[tier].cuposPorRol, [role]: Number(value) }
+    } }));
+    setPlanNotice('');
+  };
+
+  const savePlans = async () => {
+    if (!planDraft || planSaving) return;
+    setPlanSaving(true);
+    setPlanNotice('');
+    try {
+      const response = await guardarPlanesPlataforma(planDraft);
+      setPlanDraft(response.data);
+      setPlanNotice('Planes actualizados. Los nuevos cupos se aplican al crear usuarios o locales.');
+      await refreshSummary();
+      if (detail) await openDetail(detail._id);
+    } catch (err) {
+      setError(err?.response?.data?.error || 'No se pudieron guardar los planes');
+    } finally {
+      setPlanSaving(false);
+    }
+  };
+
+  const saveAssignment = async () => {
+    if (!detail || saving) return;
+    setSaving(true);
+    try {
+      await asignarPlanNegocio(detail._id, assignment);
+      await Promise.all([openDetail(detail._id), refreshSummary()]);
+      setError('');
+    } catch (err) {
+      setError(err?.response?.data?.error || 'No se pudo asignar el plan');
     } finally {
       setSaving(false);
     }
@@ -220,7 +279,7 @@ export default function PlatformConsole() {
             <TableCell sx={{ fontWeight: 600 }}>{item.nombre}</TableCell>
             <TableCell>{item.ownerEmail || '—'}</TableCell>
             <TableCell><Chip size="small" color={item.estado === 'activo' ? 'success' : 'default'} label={item.estado} /></TableCell>
-            {showBilling ? <><TableCell>{item.plan || 'gratis'}</TableCell><TableCell>{billingLabel(item.billingStatus)}</TableCell></> : <>
+            {showBilling ? <><TableCell>{item.plan === 'gratis' ? 'Legado' : (planDraft?.[item.plan]?.nombre || item.plan || 'Legado')}{item.localesAdicionales ? ` + ${item.localesAdicionales} local(es)` : ''}</TableCell><TableCell>{billingLabel(item.billingStatus)}</TableCell></> : <>
               <TableCell align="right">{item.usuarios}</TableCell><TableCell align="right">{item.locales}</TableCell>
               <TableCell align="right">{item.productos}</TableCell><TableCell align="right">{item.ventas}</TableCell>
               <TableCell>{dateLabel(item.createdAt)}</TableCell>
@@ -319,7 +378,29 @@ export default function PlatformConsole() {
               </>}
             </>}
             {section === 'planes' && <>
-              <Alert severity="info" sx={{ mb: 3 }}>Los cobros automáticos aún no están configurados. Esta sección muestra el plan y el estado preparado para cada negocio.</Alert>
+              <Alert severity="info" sx={{ mb: 3 }}>Estos precios y cupos se aplican a los negocios, pero los cobros automáticos aún no están configurados. Los negocios anteriores conservan el plan Legado hasta que les asignes uno nuevo.</Alert>
+              {planNotice && <Alert severity="success" sx={{ mb: 2 }}>{planNotice}</Alert>}
+              {planDraft && <Paper sx={{ p: 3, borderRadius: 2, mb: 3 }}>
+                <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>Configurar planes</Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 3 }}>
+                  {['inicio', 'pro'].map((key) => <Stack key={key} spacing={2}>
+                    <Typography fontWeight={700}>{key === 'inicio' ? 'Plan Inicio' : 'Plan Pro'}</Typography>
+                    <TextField label="Nombre visible" value={planDraft[key].nombre} onChange={(event) => updatePlanField(key, 'nombre', event.target.value)} />
+                    <TextField label="Precio mensual (CLP)" type="number" value={planDraft[key].precioMensual} onChange={(event) => updatePlanField(key, 'precioMensual', event.target.value)} inputProps={{ min: 0, step: 1 }} />
+                    <TextField label="Locales incluidos" type="number" value={planDraft[key].maxLocales} onChange={(event) => updatePlanField(key, 'maxLocales', event.target.value)} inputProps={{ min: 1, step: 1 }} />
+                    <Typography variant="body2" color="text.secondary">1 propietario incluido. Cupos adicionales por rol:</Typography>
+                    {staffRoles.map(([role, label]) => <TextField key={role} label={label} type="number" value={planDraft[key].cuposPorRol[role]} onChange={(event) => updateRoleQuota(key, role, event.target.value)} inputProps={{ min: 0, step: 1 }} />)}
+                  </Stack>)}
+                </Box>
+                <Divider sx={{ my: 3 }} />
+                <Typography fontWeight={700} sx={{ mb: 2 }}>Extras mensuales</Typography>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3 }}>
+                  <TextField fullWidth label="Local adicional Pro (CLP)" type="number" value={planDraft.localAdicional.precioMensual} onChange={(event) => updatePlanField('localAdicional', 'precioMensual', event.target.value)} inputProps={{ min: 0, step: 1 }} />
+                  <TextField fullWidth label="Usuario extra admin, cajero o mesero (CLP)" type="number" value={planDraft.precioUsuarioExtra.general} onChange={(event) => updatePlanField('precioUsuarioExtra', 'general', event.target.value)} inputProps={{ min: 0, step: 1 }} />
+                  <TextField fullWidth label="Repartidor extra (CLP)" type="number" value={planDraft.precioUsuarioExtra.repartidor} onChange={(event) => updatePlanField('precioUsuarioExtra', 'repartidor', event.target.value)} inputProps={{ min: 0, step: 1 }} />
+                </Stack>
+                <Button variant="contained" disabled={planSaving} onClick={savePlans}>{planSaving ? 'Guardando…' : 'Guardar planes'}</Button>
+              </Paper>}
               {businessTable(data?.negocios || [], true)}
             </>}
             {section === 'seguridad' && <Paper component="form" onSubmit={submitPassword} sx={{ p: 3, maxWidth: 500, borderRadius: 2 }}>
@@ -367,6 +448,25 @@ export default function PlatformConsole() {
               <Chip color={detail?.estado === 'activo' ? 'success' : 'default'} label={detail?.estado || ''} />
             </Stack>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Propietario: {detail?.ownerEmail || '—'}</Typography>
+            <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
+              <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1 }}>Plan del negocio</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Actual: {detail?.limitesPlan?.nombre || '—'} · {detail?.usuarios || 0}/{detail?.limitesPlan?.maxUsuarios ?? '∞'} usuarios · {detail?.locales || 0}/{detail?.limitesPlan?.maxLocales ?? '∞'} locales · ${Number(detail?.limitesPlan?.precioMensual || 0).toLocaleString('es-CL')}/mes
+              </Typography>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ sm: 'center' }}>
+                <TextField select label="Plan" size="small" value={assignment.plan} onChange={(event) => setAssignment((current) => ({ ...current, plan: event.target.value, localesAdicionales: event.target.value === 'pro' ? current.localesAdicionales : 0, usuariosExtra: event.target.value === 'gratis' ? { ...emptyExtras } : current.usuariosExtra }))} sx={{ minWidth: 180 }}>
+                  <MenuItem value="gratis">Legado (sin cupos)</MenuItem>
+                  <MenuItem value="inicio">Inicio</MenuItem>
+                  <MenuItem value="pro">Pro</MenuItem>
+                </TextField>
+                {assignment.plan === 'pro' && <TextField label="Locales adicionales" size="small" type="number" value={assignment.localesAdicionales} onChange={(event) => setAssignment((current) => ({ ...current, localesAdicionales: Number(event.target.value) }))} inputProps={{ min: 0, step: 1 }} sx={{ width: 180 }} />}
+                <Button variant="contained" onClick={saveAssignment} disabled={saving || (assignment.plan === (detail?.plan || 'gratis') && assignment.localesAdicionales === (detail?.localesAdicionales || 0) && staffRoles.every(([role]) => assignment.usuariosExtra[role] === (detail?.usuariosExtra?.[role] || 0)))}>Guardar asignación</Button>
+              </Stack>
+              {assignment.plan !== 'gratis' && <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 2 }}>
+                {staffRoles.map(([role, label]) => <TextField key={role} label={`${label} extra`} size="small" type="number" value={assignment.usuariosExtra[role]} onChange={(event) => setAssignment((current) => ({ ...current, usuariosExtra: { ...current.usuariosExtra, [role]: Number(event.target.value) } }))} inputProps={{ min: 0, step: 1 }} />)}
+              </Stack>}
+              {detail?.limitesPlan?.cuposPorRol && <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>Cupos actuales: {staffRoles.map(([role, label]) => `${label} ${detail.users.filter((user) => user.rol === role).length}/${detail.limitesPlan.cuposPorRol[role]}`).join(' · ')}</Typography>}
+            </Paper>
             <Typography variant="subtitle1" fontWeight={700}>Usuarios</Typography>
             {(detail?.users || []).map((user) => <Typography key={user._id} variant="body2" sx={{ py: 0.5 }}>{user.nombre} · {user.email} · {user.rol}</Typography>)}
             {!detail?.users?.length && <Typography variant="body2" color="text.secondary">Sin usuarios.</Typography>}
