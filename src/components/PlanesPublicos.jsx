@@ -12,26 +12,44 @@ import { MODULES } from '../lib/modules';
 const roles = [
   ['admin', 'admins'], ['cajero', 'cajeros'], ['mesero', 'meseros'], ['repartidor', 'repartidores'],
 ];
+const CACHE_KEY = 'possail-public-plans';
+const CACHE_MS = 5 * 60 * 1000;
+let pendingPlans = null;
+
+const readCachedPlans = () => {
+  try {
+    const cached = JSON.parse(window.sessionStorage.getItem(CACHE_KEY));
+    return cached && Date.now() - cached.savedAt < CACHE_MS ? cached.data : null;
+  } catch { return null; }
+};
+
+const fetchPlans = () => {
+  if (!pendingPlans) {
+    pendingPlans = obtenerPlanesPublicos().then(({ data }) => {
+      try { window.sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data, savedAt: Date.now() })); } catch { /* Storage may be unavailable. */ }
+      return data;
+    }).finally(() => { pendingPlans = null; });
+  }
+  return pendingPlans;
+};
 
 export default function PlanesPublicos({ open, onClose }) {
   const theme = useTheme();
   const mobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
-  const [planes, setPlanes] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [planes, setPlanes] = useState(readCachedPlans);
+  const [loading, setLoading] = useState(() => !readCachedPlans());
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!open || planes) return;
     let active = true;
-    setLoading(true);
-    obtenerPlanesPublicos().then(({ data }) => {
+    fetchPlans().then((data) => {
       if (active) { setPlanes(data); setError(''); }
     }).catch(() => {
-      if (active) setError('No se pudieron cargar los planes. Intenta abrir esta sección nuevamente.');
+      if (active && !readCachedPlans()) setError('No se pudieron cargar los planes. Intenta nuevamente.');
     }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [open, planes]);
+  }, []);
 
   const contratar = (plan) => {
     onClose();
@@ -41,7 +59,7 @@ export default function PlanesPublicos({ open, onClose }) {
   return (
     <Drawer anchor={mobile ? 'bottom' : 'right'} open={open} onClose={onClose}
       slotProps={{ paper: { sx: {
-        width: mobile ? '100%' : 550, maxHeight: mobile ? '90dvh' : '100dvh',
+        width: mobile ? '100%' : 'min(715px, 90vw)', maxHeight: mobile ? '90dvh' : '100dvh',
         borderRadius: mobile ? '20px 20px 0 0' : 0, bgcolor: '#0f172a', color: '#f8fafc',
       } } }}>
       <Box sx={{ p: { xs: 2.5, sm: 4 }, overflowY: 'auto' }}>
@@ -55,8 +73,11 @@ export default function PlanesPublicos({ open, onClose }) {
           <IconButton aria-label="Cerrar planes" onClick={onClose} sx={{ color: '#f8fafc' }}><CloseIcon /></IconButton>
         </Stack>
         <Divider sx={{ my: 3, borderColor: '#334155' }} />
-        {loading && <Box sx={{ textAlign: 'center', py: 5 }}><CircularProgress /></Box>}
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {loading && !planes && <Box sx={{ textAlign: 'center', py: 5 }}><CircularProgress /></Box>}
+        {error && !planes && <Alert severity="error" sx={{ mb: 2 }}>{error} <Button size="small" onClick={() => {
+          setError(''); setLoading(true);
+          fetchPlans().then(setPlanes).catch(() => setError('No se pudieron cargar los planes. Intenta nuevamente.')).finally(() => setLoading(false));
+        }}>Reintentar</Button></Alert>}
         {planes && <Stack spacing={2}>
           {['inicio', 'pro'].map((key) => {
             const plan = planes[key];
