@@ -99,12 +99,28 @@ export default function PlanesPublicos({ open, onClose }) {
             </Paper>;
           })}
           <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2, bgcolor: '#17233a', color: '#f8fafc', borderColor: '#475569' }}>
+            <Typography variant="h6" fontWeight={800}>¿Necesitas más capacidad?</Typography>
+            <Typography variant="body2" sx={{ color: '#cbd5e1', mt: 0.5, mb: 2 }}>
+              Puedes sumar cupos a los que ya incluye tu plan. Estos son los precios mensuales por cada extra:
+            </Typography>
+            <Stack spacing={1.5}>
+              {[
+                ['Un admin, cajero o mesero más', planes.precioUsuarioExtra?.general, 'por cada usuario del rol que elijas'],
+                ['Un repartidor más', planes.precioUsuarioExtra?.repartidor, 'por cada repartidor'],
+                ['Un local más', planes.localAdicional?.precioMensual, 'por cada local; disponible en Pro'],
+              ].map(([label, price, detail]) => <Stack key={label} direction="row" justifyContent="space-between" alignItems="flex-start" gap={2}>
+                <Box>
+                  <Typography variant="body2" fontWeight={700}>{label}</Typography>
+                  <Typography variant="caption" sx={{ color: '#cbd5e1' }}>{detail}</Typography>
+                </Box>
+                <Typography variant="body2" fontWeight={800} sx={{ color: '#93c5fd', whiteSpace: 'nowrap' }}>+${Number(price || 0).toLocaleString('es-CL')}/mes</Typography>
+              </Stack>)}
+            </Stack>
+          </Paper>
+          <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2, bgcolor: '#17233a', color: '#f8fafc', borderColor: '#475569' }}>
             <Typography fontWeight={700} sx={{ mb: 1 }}>Módulos opcionales en ambos planes</Typography>
             {MODULES.map(({ key, label, description }) => <Typography key={key} variant="body2" sx={{ color: '#cbd5e1', mb: 0.75 }}><strong>{label}:</strong> {description}</Typography>)}
           </Paper>
-          <Typography variant="body2" sx={{ color: '#cbd5e1' }}>
-            Extras mensuales: local adicional en Pro ${Number(planes.localAdicional?.precioMensual || 0).toLocaleString('es-CL')}; usuario adicional ${Number(planes.precioUsuarioExtra?.general || 0).toLocaleString('es-CL')}, o repartidor adicional ${Number(planes.precioUsuarioExtra?.repartidor || 0).toLocaleString('es-CL')}.
-          </Typography>
           <Alert severity="info">Los cobros en línea aún no están habilitados. Verás el plan elegido antes de crear tu cuenta.</Alert>
         </Stack>}
       </Box>
