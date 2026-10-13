@@ -59,7 +59,7 @@ export default function PlanesPublicos({ open, onClose }) {
   return (
     <Drawer anchor={mobile ? 'bottom' : 'right'} open={open} onClose={onClose}
       slotProps={{ paper: { sx: {
-        width: mobile ? '100%' : 'min(715px, 90vw)', maxHeight: mobile ? '90dvh' : '100dvh',
+        width: mobile ? '100%' : 'min(1000px, 90vw)', maxHeight: mobile ? '90dvh' : '100dvh',
         borderRadius: mobile ? '20px 20px 0 0' : 0, bgcolor: '#0f172a', color: '#f8fafc',
       } } }}>
       <Box sx={{ p: { xs: 2.5, sm: 4 }, overflowY: 'auto' }}>
@@ -78,7 +78,7 @@ export default function PlanesPublicos({ open, onClose }) {
           setError(''); setLoading(true);
           fetchPlans().then(setPlanes).catch(() => setError('No se pudieron cargar los planes. Intenta nuevamente.')).finally(() => setLoading(false));
         }}>Reintentar</Button></Alert>}
-        {planes && <Stack spacing={2}>
+        {planes && <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' }, gap: 2 }}>
           {['inicio', 'pro'].map((key) => {
             const plan = planes[key];
             if (!plan) return null;
@@ -98,7 +98,7 @@ export default function PlanesPublicos({ open, onClose }) {
               </Button>
             </Paper>;
           })}
-          <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2, bgcolor: '#17233a', color: '#f8fafc', borderColor: '#475569' }}>
+          <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2, bgcolor: '#17233a', color: '#f8fafc', borderColor: '#475569', gridColumn: { md: '1 / -1' } }}>
             <Typography variant="h6" fontWeight={800}>¿Necesitas más capacidad?</Typography>
             <Typography variant="body2" sx={{ color: '#cbd5e1', mt: 0.5, mb: 2 }}>
               Puedes sumar cupos a los que ya incluye tu plan. Estos son los precios mensuales por cada extra:
@@ -117,12 +117,12 @@ export default function PlanesPublicos({ open, onClose }) {
               </Stack>)}
             </Stack>
           </Paper>
-          <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2, bgcolor: '#17233a', color: '#f8fafc', borderColor: '#475569' }}>
+          <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2, bgcolor: '#17233a', color: '#f8fafc', borderColor: '#475569', gridColumn: { md: '1 / -1' } }}>
             <Typography fontWeight={700} sx={{ mb: 1 }}>Módulos opcionales en ambos planes</Typography>
             {MODULES.map(({ key, label, description }) => <Typography key={key} variant="body2" sx={{ color: '#cbd5e1', mb: 0.75 }}><strong>{label}:</strong> {description}</Typography>)}
           </Paper>
-          <Alert severity="info">Los cobros en línea aún no están habilitados. Verás el plan elegido antes de crear tu cuenta.</Alert>
-        </Stack>}
+          <Alert severity="info" sx={{ gridColumn: { md: '1 / -1' } }}>Los cobros en línea aún no están habilitados. Verás el plan elegido antes de crear tu cuenta.</Alert>
+        </Box>}
       </Box>
     </Drawer>
   );
